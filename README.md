@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # ⚔ Royle Metrics
 
 > Plataforma de análise de desempenho no Clash Royale para o **Curso Técnico em Ciência de Dados**.
@@ -88,6 +87,58 @@ royale-metrics/
 ```
 
 ---
+
+
+---
+## Arquitetura 
+
+. [ FONTES DE DADOS EXTENAS ] 
+     │
+     ├──> API Oficial do Clash Royale: Fornece dados reais de perfis, batalhas, guerras e cartas [1].
+     │      └─ Acessada via proxy público (proxy.royaleapi.dev/v1) para contornar IPs dinâmicos [2].
+     │
+     └──> Torneios Escolares: Partidas locais registradas manualmente ou via formulários [1].
+            │
+            ▼
+2. [ SERVIÇO DE COLETA (WORKERS / BACKGROUND) ]
+     │
+     ├──> Agendador: APScheduler configurado para coletar dados automaticamente a cada 6 horas [2].
+     ├──> Cliente API: Utiliza a biblioteca oficial `clashroyale` (Python wrapper) [1, 2].
+     └──> Funções de Sincronização: Extrai e processa dados de cartas, clãs, jogadores, 
+          batalhas, warlogs e river races [3-5].
+            │
+            ▼
+3. [ CAMADA DE ARMAZENAMENTO (BANCO DE DADOS) ]
+     │
+     └──> Banco: PostgreSQL mapeado via ORM SQLAlchemy [2].
+          Esquema (Tabelas Relacionais):
+          - cartas, clans, jogadores [3].
+          - batalhas, batalha_cartas, guerras, contribuicoes_guerra [4, 5].
+            │
+            ▼
+4. [ BACK-END CORE (API & PROCESSAMENTO) ]
+     │
+     ├──> Servidor de Aplicação: FastAPI executado pelo Uvicorn em Python 3.11+ [2].
+     ├──> Endpoints (Rotas): 
+     │      - /api/sync (Atualização manual) [5].
+     │      - /api/ranking, /api/cartas, /api/guerras, /api/torneios (Consultas e agregação) [5, 6].
+     │
+     ├──> [ MÓDULO DE ANÁLISE DE DADOS E MACHINE LEARNING ]
+     │      ├──> Manipulação e Gráficos: Uso de Pandas e Plotly (gera gráficos em formato JSON) [2, 6].
+     │      └──> Previsão (/api/guerras/previsao): Modelo `RandomForestClassifier` do Scikit-learn 
+     │           que usa o histórico de batalhas e fame para prever vitórias ou derrotas na guerra [7].
+            │
+            ▼
+5. [ FRONT-END (INTERFACE DO USUÁRIO) ]
+     │
+     ├──> Tecnologias: HTML5, CSS3, JavaScript puro [2].
+     ├──> Renderização: Biblioteca Plotly.js carrega o JSON do Back-end em uma <div id="grafico-container"> [2, 7].
+     ├──> Interatividade: Chamadas assíncronas (async/await) aos endpoints via botões de análise [7, 8].
+     └──> Estilização: Tema escuro inspirado em jogos de estratégia (com as cores primárias #0a0c14 e dourado) [9].
+
+
+
+
 
 ## ⚙️ Configuração Inicial
 
@@ -229,6 +280,45 @@ O endpoint `/api/guerras/previsao` treina um **Random Forest Classifier** com o 
 
 ---
 
+
+## 🛠️ Preparando o Ambiente (Setup Inicial)
+Antes de começar, cada aluno deve seguir este passo:
+
+**1. Clone o Repositório:** Faça o download do projeto para a sua máquina.
+
+```bash
+git clone [https://github.com/ProfMarcos25/RoyaleMetrics.git](https://github.com/ProfMarcos25/RoyaleMetrics.git)
+
+```
+
+
+**1. ATUALIZAÇÃO FAZER TODOD DIA ANTES DE INCIAR O DESENVOLVIMENTO:** 
+
+```bash
+git pull origin ProfSquard
+
+```
+
+
+
+**1.1 Identificação de Usuario** identifique seu nome de usuario ou EMAIL:
+
+
+```bash
+
+git config --global user.email <E-mail do Auno no git>
+
+
+```
+
+
+```bash
+
+git config --global user.name <Login do Aluno no git>
+
+```
+
+
 ## 📚 Dicas para a Aula
 
 ### Exploração dos dados
@@ -246,7 +336,7 @@ O endpoint `/api/guerras/previsao` treina um **Random Forest Classifier** com o 
 - Os alunos podem adicionar novos torneios diretamente pelo banco (tabela `torneios` e `partidas_torneio`)
 - O código tem **comentários em português** em todos os trechos complexos
 
----
+
 
 ## 📄 Licença
 
@@ -255,4 +345,4 @@ Dados fornecidos pela API Oficial do Clash Royale (Supercell).
 *This content is not affiliated with, endorsed, sponsored, or specifically approved by Supercell and Supercell is not responsible for it.*
 =======
 "# RoyaleMetrics" 
->>>>>>> 827d70f619366899b9c2078d08cdaf22a3a0d7c6
+
