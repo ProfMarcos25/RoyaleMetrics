@@ -1,0 +1,28 @@
+# Royle Metrics — Dependências Python
+# Instale com: pip install -r requirements.txt
+
+# Framework web
+fastapi==0.111.0
+uvicorn==0.29.0
+
+# Banco de dados
+sqlalchemy==2.0.30
+psycopg2-binary==2.9.9
+
+# Análise de dados
+pandas==2.2.2
+scikit-learn==1.4.2
+numpy==1.26.4
+
+# Gráficos
+plotly==5.22.0
+
+# Variáveis de ambiente
+python-dotenv==1.0.1
+pydantic-settings==2.2.1
+
+# API do Clash Royale
+clashroyale==4.0.0
+
+# Agendador de tarefas
+apscheduler==3.10.4

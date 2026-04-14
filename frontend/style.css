@@ -1,0 +1,949 @@
+/* ============================================================
+   Royle Metrics — Folha de Estilos Principal
+   Tema escuro inspirado em jogos de estratégia medieval/fantasy
+   Fonte: Rajdhani (Google Fonts) — pesos 400, 500, 700
+   ============================================================ */
+
+/* ----------------------------------------------------------
+   VARIÁVEIS DE COR — fácil de customizar pelos alunos
+   Para mudar o tema, basta alterar os valores aqui embaixo
+   ---------------------------------------------------------- */
+:root {
+  /* Fundos */
+  --bg-primary:      #0a0c14;   /* fundo geral da página */
+  --bg-card:         #12152a;   /* fundo dos cards e painéis */
+  --bg-card-hover:   #1a1f38;   /* fundo ao passar o mouse */
+  --bg-header:       #0d1022;   /* fundo do cabeçalho */
+  --bg-footer:       #080a11;   /* fundo do rodapé */
+
+  /* Cores de destaque */
+  --accent-gold:     #e8c94a;   /* dourado — cor principal de destaque */
+  --accent-blue:     #4a9eff;   /* azul — links e elementos secundários */
+  --accent-green:    #34d399;   /* verde — vitórias e sucessos */
+  --accent-red:      #ef4444;   /* vermelho — derrotas e erros */
+  --accent-purple:   #a855f7;   /* roxo — cartas épicas / ML */
+
+  /* Textos */
+  --text-primary:    #e2e8f0;   /* texto principal claro */
+  --text-muted:      #8892a4;   /* texto secundário / dicas */
+  --text-highlight:  #ffffff;   /* texto em destaque */
+
+  /* Bordas e divisores */
+  --border-color:    #1e2540;   /* bordas suaves */
+  --border-accent:   #e8c94a44; /* borda dourada translúcida */
+
+  /* Espaçamentos padrão */
+  --radius:          8px;       /* arredondamento dos cards */
+  --radius-lg:       16px;      /* arredondamento maior */
+
+  /* Sombras */
+  --shadow-card:     0 4px 24px rgba(0, 0, 0, 0.5);
+  --shadow-btn:      0 0 12px rgba(232, 201, 74, 0.3);
+  --shadow-hover:    0 0 24px rgba(232, 201, 74, 0.5);
+}
+
+/* ----------------------------------------------------------
+   RESET E BASE GLOBAL
+   ---------------------------------------------------------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.6;
+}
+
+a {
+  color: var(--accent-blue);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+a:hover {
+  color: var(--accent-gold);
+  text-decoration: underline;
+}
+
+/* ----------------------------------------------------------
+   HEADER — Cabeçalho fixo com logo e ações
+   ---------------------------------------------------------- */
+.header {
+  background-color: var(--bg-header);
+  border-bottom: 2px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.6);
+}
+
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* Logo */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-icon {
+  font-size: 2rem;
+  filter: drop-shadow(0 0 8px var(--accent-gold));
+}
+
+.logo-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.logo-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--accent-gold);
+  letter-spacing: 1px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.logo-sub {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 400;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+/* Área de ações do header */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* Badge de status da API */
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: default;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--text-muted);
+  flex-shrink: 0;
+  transition: background-color 0.4s;
+}
+
+.status-dot.conectado {
+  background-color: var(--accent-green);
+  box-shadow: 0 0 6px var(--accent-green);
+  animation: pulsar 2s infinite;
+}
+
+.status-dot.desconectado {
+  background-color: var(--accent-red);
+}
+
+/* Botão de sincronização manual */
+.btn-sync {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: transparent;
+  border: 2px solid var(--accent-gold);
+  color: var(--accent-gold);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 8px 18px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background-color 0.2s, box-shadow 0.2s, transform 0.1s;
+}
+
+.btn-sync:hover {
+  background-color: var(--accent-gold);
+  color: var(--bg-primary);
+  box-shadow: var(--shadow-btn);
+}
+
+.btn-sync:active {
+  transform: scale(0.97);
+}
+
+.btn-sync:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ----------------------------------------------------------
+   MAIN CONTENT
+   ---------------------------------------------------------- */
+.main-content {
+  flex: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 24px;
+  width: 100%;
+}
+
+/* ----------------------------------------------------------
+   SEÇÃO DE ANÁLISE — Título, descrição e botões
+   ---------------------------------------------------------- */
+.secao-analise {
+  margin-bottom: 32px;
+}
+
+.secao-titulo {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.secao-descricao {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin-bottom: 24px;
+  max-width: 700px;
+}
+
+/* Grid responsivo de botões de análise */
+.botoes-analise {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 16px;
+}
+
+/* Botão de análise padrão */
+.btn-analise {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background-color: var(--bg-card);
+  border: 2px solid var(--border-color);
+  color: var(--text-primary);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 20px 16px;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.25s ease;
+  line-height: 1.3;
+  min-height: 110px;
+}
+
+.btn-analise:hover {
+  background-color: var(--bg-card-hover);
+  border-color: var(--accent-gold);
+  color: var(--accent-gold);
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-2px);
+}
+
+.btn-analise.ativo {
+  background-color: var(--accent-gold);
+  border-color: var(--accent-gold);
+  color: var(--bg-primary);
+  font-weight: 700;
+}
+
+/* Botão especial para ML (borda roxa) */
+.btn-analise.btn-ml {
+  border-color: var(--accent-purple);
+}
+
+.btn-analise.btn-ml:hover {
+  border-color: var(--accent-purple);
+  color: var(--accent-purple);
+  box-shadow: 0 0 24px rgba(168, 85, 247, 0.4);
+}
+
+.btn-icon {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.btn-texto {
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ----------------------------------------------------------
+   LOADING SPINNER — 3 pontos pulsando
+   ---------------------------------------------------------- */
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 48px;
+}
+
+.loading-pontos {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Cada ponto pisca em sequência usando animation-delay */
+.loading-pontos span {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background-color: var(--accent-gold);
+  animation: piscar 1.2s ease-in-out infinite;
+}
+
+.loading-pontos span:nth-child(1) { animation-delay: 0s; }
+.loading-pontos span:nth-child(2) { animation-delay: 0.2s; }
+.loading-pontos span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes piscar {
+  0%, 80%, 100% {
+    opacity: 0.2;
+    transform: scale(0.7);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+.loading-texto {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  letter-spacing: 1px;
+}
+
+/* ----------------------------------------------------------
+   CARD DE ERRO
+   ---------------------------------------------------------- */
+.erro-card {
+  background-color: var(--bg-card);
+  border: 2px solid var(--accent-red);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.erro-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.erro-card p {
+  flex: 1;
+  color: var(--accent-red);
+  font-weight: 500;
+}
+
+.erro-card button {
+  background: transparent;
+  border: 1px solid var(--accent-red);
+  color: var(--accent-red);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.85rem;
+  padding: 6px 12px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.erro-card button:hover {
+  background-color: var(--accent-red);
+  color: white;
+}
+
+/* ----------------------------------------------------------
+   CONTAINER DO GRÁFICO PLOTLY
+   ---------------------------------------------------------- */
+.grafico-container {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  min-height: 400px;
+  box-shadow: var(--shadow-card);
+  transition: border-color 0.3s;
+}
+
+.grafico-container:has(#placeholder) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Estado placeholder (antes de carregar qualquer gráfico) */
+.placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 48px;
+  text-align: center;
+}
+
+.placeholder-icon {
+  font-size: 4rem;
+  opacity: 0.3;
+  filter: grayscale(1);
+}
+
+.placeholder-texto {
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.placeholder-sub {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  opacity: 0.7;
+  max-width: 400px;
+}
+
+/* ----------------------------------------------------------
+   CARD DE PREVISÃO ML
+   ---------------------------------------------------------- */
+.previsao-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  margin-top: 24px;
+  box-shadow: var(--shadow-card);
+}
+
+/* Borda lateral colorida por resultado */
+.previsao-card.vitoria {
+  border-left: 4px solid var(--accent-green);
+}
+
+.previsao-card.derrota {
+  border-left: 4px solid var(--accent-red);
+}
+
+.previsao-card.sem-dados {
+  border-left: 4px solid var(--text-muted);
+}
+
+.previsao-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.previsao-titulo {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-transform: uppercase;
+}
+
+.previsao-badge {
+  font-size: 1.1rem;
+  font-weight: 700;
+  padding: 6px 16px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.previsao-badge.vitoria {
+  background-color: rgba(52, 211, 153, 0.15);
+  color: var(--accent-green);
+  border: 1px solid var(--accent-green);
+}
+
+.previsao-badge.derrota {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: var(--accent-red);
+  border: 1px solid var(--accent-red);
+}
+
+/* Corpo do card de previsão */
+.previsao-body {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Métricas principais */
+.previsao-resultado {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.previsao-item {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.previsao-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.previsao-valor {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--accent-gold);
+}
+
+/* Mensagem educativa */
+.previsao-mensagem {
+  background-color: rgba(74, 158, 255, 0.08);
+  border: 1px solid rgba(74, 158, 255, 0.3);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+}
+
+.previsao-mensagem p {
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+/* Lista de features */
+.previsao-features h3,
+.previsao-historico h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+
+.features-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.feature-nome {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  min-width: 220px;
+  flex-shrink: 0;
+}
+
+.feature-barra-wrapper {
+  flex: 1;
+  background-color: var(--bg-primary);
+  border-radius: 999px;
+  height: 8px;
+  overflow: hidden;
+}
+
+.feature-barra {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent-gold), var(--accent-blue));
+  transition: width 0.8s ease;
+}
+
+.feature-percentual {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--accent-gold);
+  min-width: 44px;
+  text-align: right;
+}
+
+/* Tabela do histórico de guerras */
+.historico-tabela-wrapper {
+  overflow-x: auto;
+}
+
+.historico-tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.historico-tabela th {
+  text-align: left;
+  padding: 10px 14px;
+  background-color: var(--bg-primary);
+  color: var(--text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.75rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.historico-tabela td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.historico-tabela tr:last-child td {
+  border-bottom: none;
+}
+
+.historico-tabela tr:hover td {
+  background-color: var(--bg-card-hover);
+}
+
+/* ----------------------------------------------------------
+   FOOTER
+   ---------------------------------------------------------- */
+.footer {
+  background-color: var(--bg-footer);
+  border-top: 1px solid var(--border-color);
+  padding: 16px 24px;
+  text-align: center;
+}
+
+.footer p {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* ----------------------------------------------------------
+   ANIMAÇÕES
+   ---------------------------------------------------------- */
+@keyframes pulsar {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.grafico-container,
+.previsao-card {
+  animation: fadeIn 0.4s ease;
+}
+
+/* ----------------------------------------------------------
+   RESPONSIVIDADE — Mobile e tablets
+   ---------------------------------------------------------- */
+@media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .header-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .logo-title {
+    font-size: 1.3rem;
+  }
+
+  .main-content {
+    padding: 20px 16px;
+  }
+
+  .botoes-analise {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  }
+
+  .btn-analise {
+    min-height: 90px;
+    padding: 16px 12px;
+  }
+
+  .previsao-resultado {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .feature-nome {
+    min-width: 150px;
+  }
+}
+
+@media (max-width: 480px) {
+  .botoes-analise {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .previsao-resultado {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================
+   BOTÃO DE BANCO DE DADOS
+   ============================================================ */
+.btn-db {
+  border-color: var(--accent-blue);
+}
+
+.btn-db:hover,
+.btn-db.ativo {
+  background: rgba(74, 158, 255, 0.15);
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 18px rgba(74, 158, 255, 0.4);
+}
+
+/* ============================================================
+   PAINEL DO BANCO DE DADOS
+   ============================================================ */
+.painel-banco {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  margin: 2rem auto;
+  max-width: 1100px;
+  padding: 1.5rem 2rem 2rem;
+  box-shadow: var(--shadow-card);
+}
+
+.painel-banco-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.75rem;
+}
+
+.painel-banco-titulo {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--accent-blue);
+}
+
+.painel-banco-fechar {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.85rem;
+  padding: 0.3rem 0.8rem;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.painel-banco-fechar:hover {
+  border-color: var(--accent-red);
+  color: var(--accent-red);
+}
+
+/* Linha de status */
+.banco-status-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.banco-status-msg {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  flex: 1;
+}
+
+.banco-status-msg.ok   { color: var(--accent-green); }
+.banco-status-msg.erro { color: var(--accent-red);   }
+
+/* Controles de seleção */
+.banco-controles {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.banco-select-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.banco-select-grupo label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.banco-select,
+.banco-input {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.95rem;
+  padding: 0.5rem 0.75rem;
+  transition: border-color 0.2s;
+}
+
+.banco-select { min-width: 200px; }
+.banco-input  { width: 120px; }
+
+.banco-select:focus,
+.banco-input:focus {
+  border-color: var(--accent-blue);
+  outline: none;
+}
+
+/* Botão de ação do banco */
+.btn-banco-acao {
+  background: rgba(74, 158, 255, 0.12);
+  border: 1px solid var(--accent-blue);
+  border-radius: var(--radius);
+  color: var(--accent-blue);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0.5rem 1.1rem;
+  transition: background 0.2s, box-shadow 0.2s;
+  white-space: nowrap;
+}
+
+.btn-banco-acao:hover {
+  background: rgba(74, 158, 255, 0.25);
+  box-shadow: 0 0 12px rgba(74, 158, 255, 0.35);
+}
+
+/* Área de resultado */
+.banco-resultado {
+  min-height: 80px;
+}
+
+.banco-placeholder {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  padding: 1rem 0;
+}
+
+.banco-placeholder.erro { color: var(--accent-red); }
+
+.banco-info {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  margin-bottom: 0.75rem;
+}
+
+.banco-info strong { color: var(--accent-blue); }
+
+/* Tabela de dados do banco */
+.banco-tabela-wrapper {
+  overflow-x: auto;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-color);
+}
+
+.banco-tabela {
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  min-width: 100%;
+  width: 100%;
+}
+
+.banco-tabela thead {
+  background: rgba(74, 158, 255, 0.1);
+}
+
+.banco-tabela th {
+  border-bottom: 1px solid var(--accent-blue);
+  color: var(--accent-blue);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 0.6rem 0.9rem;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.banco-tabela td {
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+  max-width: 260px;
+  overflow: hidden;
+  padding: 0.5rem 0.9rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.banco-tabela tbody tr:hover {
+  background: var(--bg-card-hover);
+}
+
+.banco-tabela tbody tr:last-child td {
+  border-bottom: none;
+}

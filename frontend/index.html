@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>⚔ Royle Metrics — Análise de Clash Royale</title>
+
+  <!-- Fonte Rajdhani do Google Fonts (estilo estratégico/gamer) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- Plotly.js para renderização dos gráficos interativos -->
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ================================================
+       HEADER — Logo, status da API e botão de sync
+       ================================================ -->
+  <header class="header">
+    <div class="header-content">
+
+      <!-- Logo textual com ícone de espada -->
+      <div class="logo">
+        <span class="logo-icon">⚔</span>
+        <div class="logo-text">
+          <span class="logo-title">Royle Metrics</span>
+          <span class="logo-sub">Análise de Clash Royale</span>
+        </div>
+      </div>
+
+      <!-- Área direita: badge de status + botão de sync -->
+      <div class="header-actions">
+        <!-- Badge dinâmico: verde = conectado, vermelho = desconectado -->
+        <div class="status-badge" id="status-badge">
+          <span class="status-dot" id="status-dot"></span>
+          <span id="status-text">Verificando...</span>
+        </div>
+
+        <!-- Botão para acionar coleta manual (professor usa em aula) -->
+        <button class="btn-sync" id="btn-sync" onclick="sincronizar()">
+          <span id="sync-icon">🔄</span>
+          <span id="sync-text">Atualizar dados</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================================================
+       MAIN — Conteúdo principal da aplicação
+       ================================================ -->
+  <main class="main-content">
+
+    <!-- Seção de botões de análise -->
+    <section class="secao-analise">
+      <h2 class="secao-titulo">Escolha uma análise</h2>
+      <p class="secao-descricao">
+        Clique em uma opção abaixo para visualizar os dados dos clãs e jogadores.
+        Os dados são atualizados automaticamente a cada 6 horas.
+      </p>
+
+      <!-- Grid de botões de análise (responsivo via CSS Grid) -->
+      <div class="botoes-analise" id="botoes-analise">
+
+        <button
+          class="btn-analise"
+          data-endpoint="/api/ranking"
+          data-label="Ranking de jogadores"
+        >
+          <span class="btn-icon">🏆</span>
+          <span class="btn-texto">Ranking de<br/>jogadores</span>
+        </button>
+
+        <button
+          class="btn-analise"
+          data-endpoint="/api/cartas"
+          data-label="Performance de cartas"
+        >
+          <span class="btn-icon">🃏</span>
+          <span class="btn-texto">Performance<br/>de cartas</span>
+        </button>
+
+        <button
+          class="btn-analise"
+          data-endpoint="/api/guerras"
+          data-label="Histórico de guerras"
+        >
+          <span class="btn-icon">⚔️</span>
+          <span class="btn-texto">Histórico<br/>de guerras</span>
+        </button>
+
+        <button
+          class="btn-analise"
+          data-endpoint="/api/torneios"
+          data-label="Torneios escolares"
+        >
+          <span class="btn-icon">🎓</span>
+          <span class="btn-texto">Torneios<br/>escolares</span>
+        </button>
+
+        <button
+          class="btn-analise btn-ml"
+          data-endpoint="/api/guerras/previsao"
+          data-label="Prever próxima guerra"
+        >
+          <span class="btn-icon">🤖</span>
+          <span class="btn-texto">Prever próxima<br/>guerra (ML)</span>
+        </button>
+
+        <button
+          class="btn-analise btn-db"
+          id="btn-banco"
+          onclick="abrirPainelBanco()"
+          data-label="Banco de dados"
+        >
+          <span class="btn-icon">🗄️</span>
+          <span class="btn-texto">Banco de<br/>dados</span>
+        </button>
+
+      </div>
+    </section>
+
+    <!-- Spinner de loading (visível durante requisições) -->
+    <div id="loading" class="loading" hidden>
+      <div class="loading-pontos">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <p class="loading-texto" id="loading-texto">Carregando dados...</p>
+    </div>
+
+    <!-- Card de erro (exibido quando a API retorna erro) -->
+    <div id="erro-card" class="erro-card" hidden>
+      <span class="erro-icon">⚠️</span>
+      <p id="erro-mensagem">Erro ao carregar dados.</p>
+      <button onclick="fecharErro()">Fechar</button>
+    </div>
+
+    <!-- Container principal dos gráficos Plotly -->
+    <div id="grafico-container" class="grafico-container">
+      <!-- Placeholder inicial antes de qualquer análise ser carregada -->
+      <div class="placeholder">
+        <span class="placeholder-icon">⚔</span>
+        <p class="placeholder-texto">Selecione uma análise acima para começar.</p>
+        <p class="placeholder-sub">
+          Se os dados estiverem vazios, clique em <strong>Atualizar dados</strong>
+          para sincronizar com a API do Clash Royale.
+        </p>
+      </div>
+    </div>
+
+    <!-- Card de previsão de ML (oculto por padrão, exibido para /api/guerras/previsao) -->
+    <div id="previsao-card" class="previsao-card" hidden>
+      <div class="previsao-header">
+        <h2 class="previsao-titulo">🤖 Previsão ML — Próxima Guerra</h2>
+        <span class="previsao-badge" id="previsao-badge">—</span>
+      </div>
+
+      <div class="previsao-body">
+        <!-- Resultado e confiança -->
+        <div class="previsao-resultado">
+          <div class="previsao-item">
+            <span class="previsao-label">Resultado previsto</span>
+            <span class="previsao-valor" id="previsao-resultado-texto">—</span>
+          </div>
+          <div class="previsao-item">
+            <span class="previsao-label">Confiança do modelo</span>
+            <span class="previsao-valor" id="previsao-confianca">—</span>
+          </div>
+          <div class="previsao-item">
+            <span class="previsao-label">Amostras de treino</span>
+            <span class="previsao-valor" id="previsao-amostras">—</span>
+          </div>
+        </div>
+
+        <!-- Mensagem educativa -->
+        <div class="previsao-mensagem" id="previsao-mensagem-box">
+          <p id="previsao-mensagem-texto">—</p>
+        </div>
+
+        <!-- Importância das variáveis (features) -->
+        <div class="previsao-features">
+          <h3>📊 Importância das variáveis</h3>
+          <div id="previsao-features-lista" class="features-lista">
+            <!-- Preenchido dinamicamente pelo app.js -->
+          </div>
+        </div>
+
+        <!-- Histórico recente das últimas guerras -->
+        <div class="previsao-historico">
+          <h3>📅 Histórico recente (últimas guerras)</h3>
+          <div id="previsao-historico-tabela" class="historico-tabela-wrapper">
+            <!-- Preenchido dinamicamente pelo app.js -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ================================================
+       PAINEL DO BANCO DE DADOS (oculto por padrão)
+       ================================================ -->
+  <div id="painel-banco" class="painel-banco" hidden>
+    <div class="painel-banco-header">
+      <h2 class="painel-banco-titulo">🗄️ Banco de Dados</h2>
+      <button class="painel-banco-fechar" onclick="fecharPainelBanco()">✕ Fechar</button>
+    </div>
+
+    <!-- Status da conexão -->
+    <div class="banco-status-row">
+      <button class="btn-banco-acao" onclick="testarConexaoBanco()">
+        🔌 Testar Conexão
+      </button>
+      <div id="banco-status-msg" class="banco-status-msg">—</div>
+    </div>
+
+    <!-- Seleção de tabela -->
+    <div class="banco-controles">
+      <div class="banco-select-grupo">
+        <label for="banco-select-tabela">Tabela:</label>
+        <select id="banco-select-tabela" class="banco-select">
+          <option value="">— selecione —</option>
+        </select>
+      </div>
+      <div class="banco-select-grupo">
+        <label for="banco-limite">Limite de linhas:</label>
+        <input id="banco-limite" class="banco-input" type="number" value="20" min="1" max="50" />
+      </div>
+      <button class="btn-banco-acao" onclick="selecionarTabela()">
+        🔍 Executar SELECT
+      </button>
+    </div>
+
+    <!-- Resultado -->
+    <div id="banco-resultado" class="banco-resultado">
+      <p class="banco-placeholder">Teste a conexão e selecione uma tabela para ver os dados.</p>
+    </div>
+  </div>
+
+  <!-- ================================================
+       FOOTER
+       ================================================ -->
+  <footer class="footer">
+    <p>
+      ⚔ Royle Metrics &mdash; Curso Técnico em Ciência de Dados &mdash;
+      Dados fornecidos pela
+      <a href="https://developer.clashroyale.com" target="_blank" rel="noopener">
+        API Oficial do Clash Royale
+      </a>
+    </p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
