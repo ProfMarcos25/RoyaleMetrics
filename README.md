@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # ⚔ Royle Metrics
 
 > Plataforma de análise de desempenho no Clash Royale para o **Curso Técnico em Ciência de Dados**.
@@ -252,3 +253,6 @@ O endpoint `/api/guerras/previsao` treina um **Random Forest Classifier** com o 
 Projeto educacional — Curso Técnico em Ciência de Dados.
 Dados fornecidos pela API Oficial do Clash Royale (Supercell).
 *This content is not affiliated with, endorsed, sponsored, or specifically approved by Supercell and Supercell is not responsible for it.*
+=======
+"# RoyaleMetrics" 
+>>>>>>> 827d70f619366899b9c2078d08cdaf22a3a0d7c6
