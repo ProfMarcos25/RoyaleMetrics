@@ -86,11 +86,17 @@ royale-metrics/
 └── README.md
 ```
 
+
+
+
 ---
 
 
 ---
+
 ## Arquitetura 
+
+```
 
 . [ FONTES DE DADOS EXTENAS ] 
      │
@@ -138,7 +144,7 @@ royale-metrics/
 
 
 
-
+```
 
 ## ⚙️ Configuração Inicial
 
