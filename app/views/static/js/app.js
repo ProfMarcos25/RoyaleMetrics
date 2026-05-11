@@ -74,8 +74,7 @@ async function verificarStatus() {
  * Exibe o spinner de loading com mensagem customizável.
  * @param {string} [mensagem] - Texto exibido abaixo do spinner.
  */
-function mostrarLoading(mensagem = "Carregando dados...") {
-  elLoadingTexto.textContent = mensagem;
+function mostrarLoading() {
   elLoading.hidden = false;
   elGrafico.hidden = true;
   elPrevisao.hidden = true;
@@ -126,7 +125,7 @@ function destacarBotao(endpointAtivo) {
  * @param {string} label    - Nome da análise para exibir no loading.
  */
 async function buscarGrafico(endpoint, label) {
-  mostrarLoading(`Carregando ${label}...`);
+  mostrarLoading();
   destacarBotao(endpoint);
 
   try {

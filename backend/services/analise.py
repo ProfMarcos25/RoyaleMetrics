@@ -61,7 +61,7 @@ MENSAGEM_SEM_DADOS: Dict[str, Any] = {
 
 def gerar_ranking(db: Session) -> Dict[str, Any]:
     """
-    Gera o ranking dos 20 melhores jogadores por troféus.
+    Gera o ranking interno dos jogadores em cada clã por troféus.
     Produz um gráfico de barras horizontais colorido por clã.
 
     Args:
@@ -71,16 +71,30 @@ def gerar_ranking(db: Session) -> Dict[str, Any]:
         dict: Objeto Plotly serializável com 'data' e 'layout'.
     """
     sql = text("""
+        WITH ranking_por_clan AS (
+            SELECT
+                j.nickname,
+                j.trofeus,
+                j.trofeus_recorde,
+                j.arena,
+                COALESCE(c.nome, 'Sem clã') AS clan,
+                ROW_NUMBER() OVER (
+                    PARTITION BY COALESCE(c.nome, 'Sem clã')
+                    ORDER BY j.trofeus DESC, j.trofeus_recorde DESC, j.nickname ASC
+                ) AS posicao_clan
+            FROM jogadores j
+            LEFT JOIN clans c ON j.clan_id = c.id
+        )
         SELECT
-            j.nickname,
-            j.trofeus,
-            j.trofeus_recorde,
-            j.arena,
-            COALESCE(c.nome, 'Sem clã') AS clan
-        FROM jogadores j
-        LEFT JOIN clans c ON j.clan_id = c.id
-        ORDER BY j.trofeus DESC
-        LIMIT 20
+            nickname,
+            trofeus,
+            trofeus_recorde,
+            arena,
+            clan,
+            posicao_clan
+        FROM ranking_por_clan
+        WHERE posicao_clan <= 20
+        ORDER BY clan ASC, posicao_clan ASC
     """)
 
     try:
@@ -100,18 +114,28 @@ def gerar_ranking(db: Session) -> Dict[str, Any]:
     # Cria um trace por clã para exibir legenda por cor
     traces = []
     for clan in clans_unicos:
-        df_clan = df[df["clan"] == clan]
+        df_clan = df[df["clan"] == clan].copy()
+        df_clan = df_clan.sort_values("posicao_clan", ascending=True)
+
+        texto_barras = df_clan.apply(
+            lambda row: f"#{int(row['posicao_clan'])} • 🏆 {int(row['trofeus']):,}", axis=1
+        )
+
         trace = go.Bar(
-            x=df_clan["trofeus"],
-            y=df_clan["nickname"],
+            x=df_clan["trofeus"].tolist(),
+            y=df_clan["nickname"].tolist(),
             orientation="h",
             name=clan,
             marker_color=mapa_cores[clan],
-            text=df_clan["trofeus"].apply(lambda v: f"🏆 {v:,}"),
+            text=texto_barras.tolist(),
             textposition="inside",
+            customdata=df_clan[["posicao_clan", "trofeus_recorde", "arena"]].values.tolist(),
             hovertemplate=(
                 "<b>%{y}</b><br>"
+                "Posição no clã: #%{customdata[0]}<br>"
                 "Troféus: %{x:,}<br>"
+                "Recorde: %{customdata[1]:,}<br>"
+                "Arena: %{customdata[2]}<br>"
                 "Clã: " + clan + "<extra></extra>"
             ),
         )
@@ -120,7 +144,7 @@ def gerar_ranking(db: Session) -> Dict[str, Any]:
     layout = {
         **LAYOUT_PADRAO,
         "title": {
-            "text": "⚔ Ranking de Jogadores — Top 20",
+            "text": "⚔ Ranking Interno por Clã — Top 20 de cada clã",
             "font": {"size": 20, "color": "#e8c94a"},
             "x": 0.5,
             "xanchor": "center",
