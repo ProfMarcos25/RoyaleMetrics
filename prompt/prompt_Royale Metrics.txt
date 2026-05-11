@@ -1,0 +1,538 @@
+# PROMPT MESTRE v2 — Royle Metrics
+## Com integração da API Oficial do Clash Royale
+> Cole este prompt integralmente em qualquer IA generativa (Claude, ChatGPT, Gemini).
+> Referências usadas: https://github.com/AndreVarandas/clash-royale-api
+> e https://clashroyale.readthedocs.io/en/latest/api.html
+
+---
+
+## CONTEXTO DO PROJETO
+
+Você é um engenheiro de software sênior e especialista em ciência de dados. Você vai construir o **Royle Metrics**, uma aplicação web completa para alunos do Curso Técnico em Ciência de Dados analisarem desempenho de clãs, jogadores e cartas no **Clash Royale**.
+
+Os dados vêm de **duas fontes combinadas**:
+1. **API Oficial do Clash Royale** (`https://api.clashroyale.com/v1`) — dados reais dos perfis, batalhas, guerras e cartas dos alunos.
+2. **Torneios escolares** — partidas realizadas na unidade escolar, registradas manualmente ou via formulário.
+
+O back-end **coleta, armazena e analisa** esses dados. O front-end exibe tudo com um clique.
+
+---
+
+## BIBLIOTECA PYTHON PARA A API
+
+Use a biblioteca **`clashroyale`** (pip install clashroyale) que é o wrapper oficial documentado em https://clashroyale.readthedocs.io.
+
+```python
+import clashroyale
+
+# Inicializar cliente (síncrono)
+client = clashroyale.OfficialAPI(token=CLASH_API_TOKEN, is_async=False)
+
+# Buscar dados de um jogador pelo tag
+player = client.get_player("#TAG_DO_JOGADOR")
+print(player.name)           # nome
+print(player.trophies)       # troféus atuais
+print(player.best_trophies)  # recorde
+print(player.current_deck)   # deck atual (lista de cartas)
+
+# Log de batalhas recentes
+batalhas = client.get_player_battles("#TAG_DO_JOGADOR")
+for b in batalhas:
+    print(b.type)            # tipo: PvP, clanWar, etc.
+    print(b.team)            # cartas do jogador
+    print(b.opponent)        # cartas do oponente
+
+# Dados do clã
+clan = client.get_clan("#TAG_DO_CLA")
+print(clan.name)
+print(clan.members)          # lista de membros
+
+# Log de guerras do clã
+warlog = client.get_clan_warlog("#TAG_DO_CLA")
+
+# River Race (formato atual de guerra)
+river_race = client.get_clan_current_river_race("#TAG_DO_CLA")
+
+# Todas as cartas do jogo
+cards = client.get_cards()
+```
+
+> **IMPORTANTE SOBRE O TOKEN:**
+> O token da API oficial é vinculado a um IP. Para uso em escola
+> (IP dinâmico), use o proxy público da comunidade:
+> `https://proxy.royaleapi.dev/v1`
+> Crie o cliente assim:
+> `client = clashroyale.OfficialAPI(token=TOKEN, url="https://proxy.royaleapi.dev/v1")`
+
+---
+
+## STACK TECNOLÓGICA
+
+| Camada | Tecnologia |
+|---|---|
+| API Clash Royale | `clashroyale` (Python wrapper oficial) |
+| Back-end | `FastAPI` (Python 3.11+) |
+| Agendador de coleta | `APScheduler` (coleta automática a cada 6h) |
+| Análise de dados | `Pandas` + `Scikit-learn` |
+| Gráficos | `Plotly` → JSON para o front-end |
+| Banco de dados | `PostgreSQL` via `SQLAlchemy` |
+| Front-end | HTML5 + CSS3 + JavaScript puro + Plotly.js |
+| Variáveis de ambiente | `python-dotenv` |
+| Servidor | `Uvicorn` |
+
+---
+
+## ESTRUTURA DE PASTAS
+
+```
+royle-metrics/
+├── backend/
+│   ├── main.py
+│   ├── database.py
+│   ├── models.py
+│   ├── scheduler.py           ← coleta automática da API
+│   ├── routers/
+│   │   ├── __init__.py
+│   │   ├── sync.py            ← rota para acionar coleta manual
+│   │   ├── ranking.py
+│   │   ├── cartas.py
+│   │   ├── guerras.py
+│   │   └── torneios.py
+│   └── services/
+│       ├── __init__.py
+│       ├── clash_client.py    ← wrapper do clashroyale lib
+│       ├── coleta.py          ← funções de coleta e persistência
+│       ├── analise.py         ← Pandas, estatísticas
+│       └── modelo.py          ← Scikit-learn
+├── frontend/
+│   ├── index.html
+│   ├── style.css
+│   └── app.js
+├── database/
+│   └── schema.sql
+├── data/
+│   └── tags_clas.json         ← tags dos clãs monitorados
+├── .env.example
+├── requirements.txt
+└── README.md
+```
+
+---
+
+## BANCO DE DADOS — SCHEMA COMPLETO
+
+Gere `database/schema.sql` com estas tabelas PostgreSQL:
+
+```sql
+-- Clãs monitorados pelo projeto
+CREATE TABLE clans (
+    id          SERIAL PRIMARY KEY,
+    tag         VARCHAR(20)  UNIQUE NOT NULL,
+    nome        VARCHAR(100) NOT NULL,
+    descricao   TEXT,
+    trofeus     INTEGER DEFAULT 0,
+    membros     INTEGER DEFAULT 0,
+    atualizado_em TIMESTAMP DEFAULT NOW()
+);
+
+-- Jogadores (membros dos clãs)
+CREATE TABLE jogadores (
+    id             SERIAL PRIMARY KEY,
+    tag            VARCHAR(20)  UNIQUE NOT NULL,
+    nickname       VARCHAR(50)  NOT NULL,
+    nivel          INTEGER,
+    trofeus        INTEGER DEFAULT 0,
+    trofeus_recorde INTEGER DEFAULT 0,
+    arena          VARCHAR(50),
+    clan_id        INTEGER REFERENCES clans(id) ON DELETE SET NULL,
+    ultima_batalha TIMESTAMP,
+    criado_em      TIMESTAMP DEFAULT NOW()
+);
+
+-- Cartas do jogo (populado via GET /cards)
+CREATE TABLE cartas (
+    id        SERIAL PRIMARY KEY,
+    card_id   INTEGER UNIQUE,           -- ID original da API
+    nome      VARCHAR(100) NOT NULL,
+    tipo      VARCHAR(30),              -- troop, spell, building
+    raridade  VARCHAR(20),              -- Common, Rare, Epic, Legendary
+    elixir    INTEGER,
+    max_nivel INTEGER,
+    url_icon  TEXT                      -- link da imagem via royaleapi assets
+);
+
+-- Batalhas coletadas da API
+CREATE TABLE batalhas (
+    id               SERIAL PRIMARY KEY,
+    battle_id        VARCHAR(100) UNIQUE, -- hash único da batalha
+    jogador_id       INTEGER REFERENCES jogadores(id),
+    tipo             VARCHAR(30),          -- PvP, clanWar, riverRacePvP, etc.
+    resultado        VARCHAR(10),          -- vitoria, derrota, empate
+    trofeus_ganhos   INTEGER DEFAULT 0,
+    time_trofeus     INTEGER,
+    oponente_tag     VARCHAR(20),
+    oponente_trofeus INTEGER,
+    data_batalha     TIMESTAMP,
+    torneio_id       INTEGER REFERENCES torneios(id) NULL
+);
+
+-- Cartas usadas em cada batalha (deck do jogador)
+CREATE TABLE batalha_cartas (
+    batalha_id INTEGER REFERENCES batalhas(id) ON DELETE CASCADE,
+    carta_id   INTEGER REFERENCES cartas(id),
+    nivel      INTEGER,
+    PRIMARY KEY (batalha_id, carta_id)
+);
+
+-- River Race / Guerras de clã
+CREATE TABLE guerras (
+    id                SERIAL PRIMARY KEY,
+    clan_id           INTEGER REFERENCES clans(id),
+    temporada         VARCHAR(20),          -- ex: "2024-03"
+    tipo              VARCHAR(30),          -- riverRace, classicWarDay
+    batalhas_ganhas   INTEGER DEFAULT 0,
+    batalhas_perdidas INTEGER DEFAULT 0,
+    pontuacao         INTEGER DEFAULT 0,
+    colocacao         INTEGER,
+    data_inicio       DATE,
+    data_fim          DATE
+);
+
+-- Contribuição individual por guerra
+CREATE TABLE contribuicoes_guerra (
+    id          SERIAL PRIMARY KEY,
+    guerra_id   INTEGER REFERENCES guerras(id),
+    jogador_id  INTEGER REFERENCES jogadores(id),
+    batalhas    INTEGER DEFAULT 0,
+    vitorias    INTEGER DEFAULT 0,
+    fame        INTEGER DEFAULT 0          -- métrica do River Race
+);
+
+-- Torneios escolares (entrada manual ou via formulário)
+CREATE TABLE torneios (
+    id          SERIAL PRIMARY KEY,
+    nome        VARCHAR(100) NOT NULL,
+    data        DATE,
+    formato     VARCHAR(50),               -- eliminatoria, pontos_corridos
+    descricao   TEXT,
+    campeao_id  INTEGER REFERENCES jogadores(id) NULL
+);
+
+-- Partidas dos torneios escolares
+CREATE TABLE partidas_torneio (
+    id           SERIAL PRIMARY KEY,
+    torneio_id   INTEGER REFERENCES torneios(id),
+    jogador_a_id INTEGER REFERENCES jogadores(id),
+    jogador_b_id INTEGER REFERENCES jogadores(id),
+    vencedor_id  INTEGER REFERENCES jogadores(id) NULL,
+    placar_a     INTEGER DEFAULT 0,
+    placar_b     INTEGER DEFAULT 0,
+    data_partida TIMESTAMP
+);
+```
+
+---
+
+## SERVIÇO DE COLETA — `backend/services/clash_client.py`
+
+```python
+"""
+Wrapper do clashroyale para o Royle Metrics.
+Documentação: https://clashroyale.readthedocs.io/en/latest/api.html
+"""
+import clashroyale
+from ..database import get_settings
+
+def get_client() -> clashroyale.OfficialAPI:
+    """
+    Retorna cliente da API do Clash Royale.
+    Usa proxy público (proxy.royaleapi.dev) para ambientes com IP dinâmico
+    como laboratórios escolares.
+    """
+    settings = get_settings()
+    return clashroyale.OfficialAPI(
+        token=settings.CLASH_API_TOKEN,
+        url="https://proxy.royaleapi.dev/v1"
+    )
+```
+
+---
+
+## SERVIÇO DE COLETA — `backend/services/coleta.py`
+
+Implemente as seguintes funções com docstrings em português:
+
+### `sincronizar_cartas(db)`
+- Chama `client.get_cards()`
+- Para cada carta retornada: faz upsert na tabela `cartas`
+- Campos a mapear da API: `id` → `card_id`, `name` → `nome`, `rarity` → `raridade`, `elixirCost` → `elixir`, `maxLevel` → `max_nivel`
+- URL do ícone: `https://royaleapi.github.io/cr-api-assets/cards/{card_name}.png`
+
+### `sincronizar_clan(tag: str, db)`
+- Chama `client.get_clan(tag)` e `client.get_clan_members(tag)`
+- Faz upsert do clã na tabela `clans`
+- Para cada membro: faz upsert em `jogadores` com `tag`, `nickname`, `trofeus`, `nivel`, `arena`
+- Chama `sincronizar_batalhas_jogador()` para cada membro
+
+### `sincronizar_batalhas_jogador(tag: str, db)`
+- Chama `client.get_player_battles(tag)` — retorna as últimas batalhas
+- Para cada batalha:
+  - Gera `battle_id` único como hash de `(tag + battleTime)`
+  - Determina `resultado`: vitória se `team[0].crowns > opponent[0].crowns`
+  - Persiste em `batalhas` com INSERT OR IGNORE (evitar duplicatas por `battle_id`)
+  - Para cada carta em `team[0].cards`: persiste em `batalha_cartas`
+
+### `sincronizar_warlog(tag: str, db)`
+- Chama `client.get_clan_warlog(tag)`
+- Para cada guerra no histórico: faz upsert em `guerras`
+- Campos: `seasonId` → `temporada`, `standings` → `colocacao`, `participants` → contribuições individuais
+
+### `sincronizar_river_race(tag: str, db)`
+- Chama `client.get_clan_current_river_race(tag)`
+- Persiste guerra atual com status em andamento
+- Persiste fame e batalhas de cada participante em `contribuicoes_guerra`
+
+---
+
+## AGENDADOR — `backend/scheduler.py`
+
+```python
+"""
+Agendador de coleta automática usando APScheduler.
+Sincroniza dados dos clãs a cada 6 horas automaticamente.
+"""
+from apscheduler.schedulers.background import BackgroundScheduler
+from .services.coleta import sincronizar_clan
+from .database import SessionLocal
+import json, os
+
+def job_sincronizar_todos():
+    """Lê tags dos clãs de data/tags_clas.json e sincroniza cada um."""
+    with open("data/tags_clas.json") as f:
+        tags = json.load(f)["clans"]
+    db = SessionLocal()
+    try:
+        for tag in tags:
+            sincronizar_clan(tag, db)
+    finally:
+        db.close()
+
+def iniciar_scheduler():
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(job_sincronizar_todos, "interval", hours=6, id="sync_clans")
+    scheduler.start()
+    return scheduler
+```
+
+---
+
+## ROTAS DO BACK-END
+
+### `GET /api/sync` (em `routers/sync.py`)
+- Aciona `job_sincronizar_todos()` manualmente (para o professor usar na aula)
+- Retorna `{"status": "ok", "mensagem": "Sincronização iniciada", "clans": [...]}`
+
+### `GET /api/ranking` (em `routers/ranking.py`)
+Query SQL a executar:
+```sql
+SELECT j.nickname, j.trofeus, j.trofeus_recorde, j.arena, c.nome as clan
+FROM jogadores j
+LEFT JOIN clans c ON j.clan_id = c.id
+ORDER BY j.trofeus DESC
+LIMIT 20;
+```
+Gerar gráfico de barras horizontais com Plotly. Cores por clã.
+
+### `GET /api/cartas` (em `routers/cartas.py`)
+Query SQL a executar:
+```sql
+SELECT
+    ca.nome,
+    ca.raridade,
+    ca.elixir,
+    COUNT(bc.batalha_id) AS frequencia,
+    ROUND(
+        SUM(CASE WHEN b.resultado = 'vitoria' THEN 1 ELSE 0 END)::numeric
+        / NULLIF(COUNT(bc.batalha_id), 0) * 100, 1
+    ) AS taxa_vitoria
+FROM cartas ca
+JOIN batalha_cartas bc ON ca.id = bc.carta_id
+JOIN batalhas b ON bc.batalha_id = b.id
+GROUP BY ca.nome, ca.raridade, ca.elixir
+HAVING COUNT(bc.batalha_id) >= 5
+ORDER BY taxa_vitoria DESC;
+```
+Gerar scatter plot: eixo X = frequência, eixo Y = taxa de vitória, tamanho = elixir, cor = raridade.
+
+### `GET /api/guerras` (em `routers/guerras.py`)
+Query SQL a executar:
+```sql
+SELECT
+    g.temporada,
+    c.nome as clan,
+    g.batalhas_ganhas,
+    g.batalhas_perdidas,
+    g.pontuacao,
+    g.colocacao
+FROM guerras g
+JOIN clans c ON g.clan_id = c.id
+ORDER BY g.data_inicio DESC;
+```
+Gerar gráfico de linhas com evolução da pontuação por temporada.
+
+### `GET /api/torneios` (em `routers/torneios.py`)
+Buscar torneios escolares com contagem de participantes e resultado.
+Gerar gráfico de barras com participantes e, se disponível, highlight do campeão.
+
+### `GET /api/guerras/previsao` (em `services/modelo.py`)
+- Features: `batalhas_ganhas`, `batalhas_perdidas`, `pontuacao`, `media_fame_membros` das últimas 5 guerras
+- Modelo: `RandomForestClassifier` do Scikit-learn
+- Target: colocação ≤ 3 → vitória, > 3 → derrota
+- Retornar: `{"previsao": "vitoria"|"derrota", "confianca": float, "top_features": {...}}`
+
+---
+
+## FRONT-END — REGRAS DETALHADAS
+
+### `frontend/index.html`
+- Importar Plotly.js: `https://cdn.plot.ly/plotly-latest.min.js`
+- Header com logo textual "⚔ Royle Metrics" e status badge "API conectada / desconectada"
+- Botão de sincronização manual: "Atualizar dados" (chama `GET /api/sync`)
+- 5 botões de análise com `data-endpoint`:
+  - `/api/ranking` → "Ranking de jogadores"
+  - `/api/cartas` → "Performance de cartas"
+  - `/api/guerras` → "Histórico de guerras"
+  - `/api/torneios` → "Torneios escolares"
+  - `/api/guerras/previsao` → "Prever próxima guerra"
+- `<div id="grafico-container">` para os gráficos Plotly
+- `<div id="previsao-card">` oculto, exibido quando endpoint de previsão retornar
+- `<div id="loading">` spinner CSS visível durante fetch
+
+### `frontend/style.css`
+Tema escuro inspirado em jogos de estratégia:
+- `--bg-primary: #0a0c14`
+- `--bg-card: #12152a`
+- `--bg-card-hover: #1a1f38`
+- `--accent-gold: #e8c94a`
+- `--accent-blue: #4a9eff`
+- `--text-primary: #e2e8f0`
+- `--text-muted: #8892a4`
+- Fonte: **Rajdhani** do Google Fonts (peso 400, 500, 700)
+- Botões: border `2px solid var(--accent-gold)`, hover preenche de dourado
+- Spinner: 3 pontos pulsando com `@keyframes`
+- Card de previsão: border-left `4px solid` verde (vitória) ou vermelho (derrota)
+- Responsivo: grid de botões com `repeat(auto-fit, minmax(190px, 1fr))`
+
+### `frontend/app.js`
+```javascript
+const API_BASE = "http://localhost:8000";
+
+// Ao carregar a página, verificar status da API
+async function verificarStatus() { ... }
+
+// Ao clicar em um botão de análise
+async function buscarGrafico(endpoint) {
+    mostrarLoading();
+    try {
+        const res = await fetch(API_BASE + endpoint);
+        if (!res.ok) throw new Error(`Erro ${res.status}`);
+        const data = await res.json();
+
+        if (endpoint.includes("previsao")) {
+            exibirPrevisao(data);
+        } else {
+            Plotly.newPlot("grafico-container", data.data, {
+                ...data.layout,
+                paper_bgcolor: "rgba(0,0,0,0)",
+                plot_bgcolor:  "rgba(0,0,0,0)",
+                font: { color: "#e2e8f0", family: "Rajdhani" }
+            });
+        }
+    } catch (err) {
+        exibirErro(err.message);
+    } finally {
+        ocultarLoading();
+    }
+}
+
+// Botão de sincronização manual
+async function sincronizar() { ... }
+```
+Todos os event listeners devem ser adicionados via `querySelectorAll`.
+
+---
+
+## `data/tags_clas.json`
+
+```json
+{
+  "clans": [
+    "#TAG_DO_CLA_1",
+    "#TAG_DO_CLA_2"
+  ],
+  "jogadores": []
+}
+```
+
+---
+
+## ARQUIVOS DE CONFIGURAÇÃO
+
+### `.env.example`
+```
+CLASH_API_TOKEN=seu_token_aqui
+CLASH_API_URL=https://proxy.royaleapi.dev/v1
+DATABASE_URL=postgresql://usuario:senha@localhost:5432/royle_metrics
+ENVIRONMENT=development
+SYNC_INTERVAL_HOURS=6
+```
+
+### `requirements.txt`
+```
+fastapi==0.111.0
+uvicorn==0.29.0
+sqlalchemy==2.0.30
+psycopg2-binary==2.9.9
+pandas==2.2.2
+scikit-learn==1.4.2
+plotly==5.22.0
+python-dotenv==1.0.1
+clashroyale==4.0.0
+apscheduler==3.10.4
+```
+
+---
+
+## REGRAS GERAIS DE QUALIDADE
+
+- Docstrings em português em todas as funções Python
+- Type hints em todas as funções
+- Tratamento de erros da API: `clashroyale` lança `clashroyale.errors.NotFoundError` (tag inválida) e `clashroyale.errors.RatelimitError` (muitas requisições) — capturar ambos
+- O banco nunca deve quebrar com dados vazios — retornar gráfico vazio com mensagem "Sem dados ainda. Clique em Atualizar dados."
+- O JavaScript usa apenas `async/await`, sem `.then()` encadeado
+- CSS com variáveis (`--cor-primaria`, etc.) para facilitar customização pelos alunos
+- Comentários explicativos em português nos trechos mais complexos
+
+---
+
+## INSTRUÇÃO FINAL
+
+Gere **todos os arquivos** listados na estrutura de pastas, com código completo e funcional. Não use `# TODO` ou `pass`. Cada arquivo deve ser copiável e executável diretamente.
+
+Ordem de geração:
+1. `database/schema.sql`
+2. `backend/database.py`
+3. `backend/models.py`
+4. `backend/services/clash_client.py`
+5. `backend/services/coleta.py`
+6. `backend/services/analise.py`
+7. `backend/services/modelo.py`
+8. `backend/routers/` (todos os 5 arquivos)
+9. `backend/scheduler.py`
+10. `backend/main.py`
+11. `frontend/index.html`
+12. `frontend/style.css`
+13. `frontend/app.js`
+14. `data/tags_clas.json`
+15. `.env.example` e `requirements.txt`
+16. `README.md`
