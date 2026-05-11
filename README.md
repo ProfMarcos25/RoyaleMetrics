@@ -1,222 +1,123 @@
-# ⚔ Royle Metrics
+﻿# ⚔ Royle Metrics
 
-> Plataforma de análise de desempenho no Clash Royale para o **Curso Técnico em Ciência de Dados**.
+Plataforma educacional para análise de desempenho no **Clash Royale**, usada no **Curso Técnico em Ciência de Dados**.
 
-Combina dados reais da [API Oficial do Clash Royale](https://developer.clashroyale.com) com partidas de torneios escolares para gerar gráficos interativos, rankings e até previsões com **Machine Learning**.
+O projeto integra:
+- Coleta de dados reais da API oficial do Clash Royale
+- Armazenamento em PostgreSQL
+- API FastAPI com análises e gráficos (Plotly)
+- Modelo preditivo de guerras com Machine Learning
 
----
-
-## 📋 Índice
-
-- [Visão Geral](#visão-geral)
-- [Stack Tecnológica](#stack-tecnológica)
-- [Estrutura de Pastas](#estrutura-de-pastas)
-- [Configuração Inicial](#configuração-inicial)
-- [Como Executar](#como-executar)
-- [Endpoints da API](#endpoints-da-api)
-- [Como Adicionar Clãs](#como-adicionar-clãs)
-- [Modelo de Machine Learning](#modelo-de-machine-learning)
-- [Dicas para a Aula](#dicas-para-a-aula)
+📘 Versão didática para alunos: [`README_ALUNOS.md`](README_ALUNOS.md)
 
 ---
 
-## 🎮 Visão Geral
+## 📌 Arquitetura Atual (MVC)
 
-O Royle Metrics é dividido em:
+A aplicação foi reestruturada para **MVC** em `app/`:
 
-| Camada | Descrição |
-|---|---|
-| **Back-end** | Servidor FastAPI que coleta dados da API, armazena no PostgreSQL e serve endpoints de análise |
-| **Banco de dados** | PostgreSQL com tabelas para clãs, jogadores, batalhas, cartas, guerras e torneios |
-| **Front-end** | Página HTML única com gráficos Plotly interativos e tema gamer escuro |
-| **ML** | Modelo Random Forest que prevê o resultado de guerras com base no histórico |
+- **Model (`app/models/`)**: banco (`database.py`), entidades ORM (`entities.py`) e serviços de negócio (`services/`)
+- **Controller (`app/controllers/`)**: rotas FastAPI (`ranking`, `cartas`, `guerras`, `torneios`, `sync`, `db_tools`)
+- **View (`app/views/`)**: front-end (`templates/index.html` + `static/css` + `static/js`)
+
+O ponto de entrada principal é:
+- `app/main.py`
+
+> A pasta `backend/` foi mantida por compatibilidade/histórico, mas o fluxo recomendado é rodar via `app.main:app`.
+
+---
+
+## 🧱 Estrutura de Pastas
+
+```text
+royale-metrics/
+├── app/
+│   ├── main.py
+│   ├── config.py
+│   ├── controllers/
+│   │   ├── ranking.py
+│   │   ├── cartas.py
+│   │   ├── guerras.py
+│   │   ├── torneios.py
+│   │   ├── sync.py
+│   │   └── db_tools.py
+│   ├── models/
+│   │   ├── database.py
+│   │   ├── entities.py
+│   │   └── services/
+│   │       ├── clash_client.py
+│   │       ├── coleta.py
+│   │       ├── analise.py
+│   │       ├── modelo.py
+│   │       └── scheduler.py
+│   └── views/
+│       ├── templates/index.html
+│       └── static/
+│           ├── css/style.css
+│           └── js/app.js
+├── data/tags_clas.json
+├── database/schema.sql
+├── teste/
+│   ├── seed_md.py
+│   └── seed_db.py
+├── requirements.txt
+└── .env.example
+```
 
 ---
 
 ## 🛠 Stack Tecnológica
 
-| Tecnologia | Função |
-|---|---|
-| `FastAPI` | API REST assíncrona |
-| `SQLAlchemy 2.0` | ORM para PostgreSQL |
-| `psycopg2-binary` | Driver PostgreSQL |
-| `clashroyale` | Wrapper da API oficial |
-| `Pandas` | Manipulação de dados |
-| `Scikit-learn` | Modelo preditivo (Random Forest) |
-| `Plotly` | Gráficos interativos |
-| `APScheduler` | Coleta automática a cada 6h |
-| `python-dotenv` | Variáveis de ambiente |
-| `Uvicorn` | Servidor ASGI |
+- `FastAPI` + `Uvicorn`
+- `SQLAlchemy` + `psycopg2-binary`
+- `PostgreSQL`
+- `clashroyale` (API wrapper)
+- `Pandas`, `Plotly`
+- `Scikit-learn` (Random Forest)
+- `APScheduler` (sincronização automática)
 
 ---
-
-## 📁 Estrutura de Pastas
-
-```
-royale-metrics/
-├── backend/
-│   ├── __init__.py
-│   ├── main.py          ← Ponto de entrada da aplicação FastAPI
-│   ├── database.py      ← Configuração do banco e sessões
-│   ├── models.py        ← Modelos ORM (tabelas)
-│   ├── scheduler.py     ← Agendador de coleta automática (6h)
-│   ├── routers/
-│   │   ├── __init__.py
-│   │   ├── sync.py      ← GET /api/sync (coleta manual)
-│   │   ├── ranking.py   ← GET /api/ranking
-│   │   ├── cartas.py    ← GET /api/cartas
-│   │   ├── guerras.py   ← GET /api/guerras + /api/guerras/previsao
-│   │   └── torneios.py  ← GET /api/torneios
-│   └── services/
-│       ├── __init__.py
-│       ├── clash_client.py  ← Inicializa o cliente da API
-│       ├── coleta.py        ← Funções de coleta e persistência
-│       ├── analise.py       ← Análises Pandas + gráficos Plotly
-│       └── modelo.py        ← Random Forest para previsão de guerras
-├── frontend/
-│   ├── index.html       ← Interface web completa
-│   ├── style.css        ← Tema escuro (variáveis CSS customizáveis)
-│   └── app.js           ← Lógica JS com async/await
-├── database/
-│   └── schema.sql       ← Schema completo do PostgreSQL
-├── data/
-│   └── tags_clas.json   ← Tags dos clãs monitorados
-├── .env.example         ← Template das variáveis de ambiente
-├── requirements.txt     ← Dependências Python
-└── README.md
-```
-
-
-
-
----
-
-
----
-
-## Arquitetura 
-
-```
-
-. [ FONTES DE DADOS EXTENAS ] 
-     │
-     ├──> API Oficial do Clash Royale: Fornece dados reais de perfis, batalhas, guerras e cartas [1].
-     │      └─ Acessada via proxy público (proxy.royaleapi.dev/v1) para contornar IPs dinâmicos [2].
-     │
-     └──> Torneios Escolares: Partidas locais registradas manualmente ou via formulários [1].
-            │
-            ▼
-2. [ SERVIÇO DE COLETA (WORKERS / BACKGROUND) ]
-     │
-     ├──> Agendador: APScheduler configurado para coletar dados automaticamente a cada 6 horas [2].
-     ├──> Cliente API: Utiliza a biblioteca oficial `clashroyale` (Python wrapper) [1, 2].
-     └──> Funções de Sincronização: Extrai e processa dados de cartas, clãs, jogadores, 
-          batalhas, warlogs e river races [3-5].
-            │
-            ▼
-3. [ CAMADA DE ARMAZENAMENTO (BANCO DE DADOS) ]
-     │
-     └──> Banco: PostgreSQL mapeado via ORM SQLAlchemy [2].
-          Esquema (Tabelas Relacionais):
-          - cartas, clans, jogadores [3].
-          - batalhas, batalha_cartas, guerras, contribuicoes_guerra [4, 5].
-            │
-            ▼
-4. [ BACK-END CORE (API & PROCESSAMENTO) ]
-     │
-     ├──> Servidor de Aplicação: FastAPI executado pelo Uvicorn em Python 3.11+ [2].
-     ├──> Endpoints (Rotas): 
-     │      - /api/sync (Atualização manual) [5].
-     │      - /api/ranking, /api/cartas, /api/guerras, /api/torneios (Consultas e agregação) [5, 6].
-     │
-     ├──> [ MÓDULO DE ANÁLISE DE DADOS E MACHINE LEARNING ]
-     │      ├──> Manipulação e Gráficos: Uso de Pandas e Plotly (gera gráficos em formato JSON) [2, 6].
-     │      └──> Previsão (/api/guerras/previsao): Modelo `RandomForestClassifier` do Scikit-learn 
-     │           que usa o histórico de batalhas e fame para prever vitórias ou derrotas na guerra [7].
-            │
-            ▼
-5. [ FRONT-END (INTERFACE DO USUÁRIO) ]
-     │
-     ├──> Tecnologias: HTML5, CSS3, JavaScript puro [2].
-     ├──> Renderização: Biblioteca Plotly.js carrega o JSON do Back-end em uma <div id="grafico-container"> [2, 7].
-     ├──> Interatividade: Chamadas assíncronas (async/await) aos endpoints via botões de análise [7, 8].
-     └──> Estilização: Tema escuro inspirado em jogos de estratégia (com as cores primárias #0a0c14 e dourado) [9].
-
-
-
-```
 
 ## ⚙️ Configuração Inicial
 
-### 1. Pré-requisitos
+### 1) Pré-requisitos
 
 - Python 3.11+
-- PostgreSQL 14+ rodando localmente
-- Token da API do Clash Royale ([obtido aqui](https://developer.clashroyale.com))
+- PostgreSQL 14+
+- Token da API Clash Royale
 
-### 2. Clone e ambiente virtual
+### 2) Ambiente virtual e dependências
 
-```bash
-# Na pasta do projeto
+```powershell
 python -m venv .venv
-
-# Windows
-.venv\Scripts\activate
-
-# Linux/Mac
-source .venv/bin/activate
-```
-
-### 3. Instale as dependências
-
-```bash
+.\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 ```
 
-### 4. Configure as variáveis de ambiente
+### 3) Configurar `.env`
 
-```bash
-# Crie o arquivo .env a partir do template
-copy .env.example .env   # Windows
-cp .env.example .env     # Linux/Mac
+```powershell
+Copy-Item .env.example .env
 ```
 
-Edite o `.env` e preencha:
+Exemplo mínimo:
 
 ```env
-CLASH_API_TOKEN=seu_token_da_api_aqui
-DATABASE_URL=postgresql://seu_usuario:sua_senha@localhost:5432/royle_metrics
+CLASH_API_TOKEN=seu_token_aqui
+CLASH_API_URL=https://proxy.royaleapi.dev/v1
+DATABASE_URL=postgresql://postgres:senha@localhost:5432/royale_metrics
 ENVIRONMENT=development
+SYNC_INTERVAL_HOURS=6
 ```
 
-> **Dica para escolas:** Use `CLASH_API_URL=https://proxy.royaleapi.dev/v1` (já é o padrão) para contornar a restrição de IP fixo da API oficial.
+### 4) Clãs monitorados
 
-### 5. Crie o banco de dados
-
-```bash
-# No PostgreSQL (psql)
-CREATE DATABASE royle_metrics;
-```
-
-Em seguida, execute o schema:
-
-```bash
-psql -U seu_usuario -d royle_metrics -f database/schema.sql
-```
-
-Ou deixe o FastAPI criar as tabelas automaticamente na primeira execução (modo desenvolvimento).
-
-### 6. Configure os clãs monitorados
-
-Edite o arquivo `data/tags_clas.json` com as tags dos clãs dos alunos:
+Edite `data/tags_clas.json`:
 
 ```json
 {
-  "clans": [
-    "#ABC123",
-    "#XYZ789"
-  ],
-  "jogadores_extras": []
+  "clans": ["#GGRU2GCJ"],
+  "jogadores": []
 }
 ```
 
@@ -224,29 +125,17 @@ Edite o arquivo `data/tags_clas.json` com as tags dos clãs dos alunos:
 
 ## ▶️ Como Executar
 
-### Iniciar o servidor back-end
+Com o ambiente virtual ativo:
 
-```bash
-# Na pasta royale-metrics/
-uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
+```powershell
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-- Documentação automática: http://localhost:8000/docs
-- ReDoc: http://localhost:8000/redoc
-
-### Abrir o front-end
-
-Abra o arquivo `frontend/index.html` diretamente no navegador, ou use a extensão **Live Server** do VS Code:
-
-1. Clique com o botão direito em `index.html`
-2. Selecione "Open with Live Server"
-3. O front-end abrirá em `http://127.0.0.1:5500`
-
-### Primeira sincronização
-
-1. Com o servidor rodando, clique em **"Atualizar dados"** no front-end
-2. Aguarde a sincronização ser concluída
-3. Explore as análises nos botões abaixo
+URLs principais:
+- Front-end: `http://localhost:8000`
+- Swagger: `http://localhost:8000/docs`
+- ReDoc: `http://localhost:8000/redoc`
+- Health: `http://localhost:8000/health`
 
 ---
 
@@ -254,101 +143,59 @@ Abra o arquivo `frontend/index.html` diretamente no navegador, ou use a extensã
 
 | Método | Endpoint | Descrição |
 |---|---|---|
-| `GET` | `/` | Status da API |
-| `GET` | `/health` | Health check |
-| `GET` | `/api/sync` | Sincronização manual |
-| `GET` | `/api/ranking` | Ranking dos 20 melhores jogadores |
-| `GET` | `/api/cartas` | Performance das cartas (frequência × vitórias) |
-| `GET` | `/api/guerras` | Histórico de River Races |
-| `GET` | `/api/guerras/previsao` | Previsão ML da próxima guerra |
-| `GET` | `/api/torneios` | Torneios escolares |
-| `GET` | `/docs` | Documentação Swagger UI |
+| `GET` | `/health` | Status da aplicação |
+| `GET` | `/api/sync` | Sincronização manual dos clãs configurados |
+| `GET` | `/api/ranking` | Ranking dos jogadores |
+| `GET` | `/api/cartas` | Análise de performance das cartas |
+| `GET` | `/api/guerras` | Histórico de guerras (River Race) |
+| `GET` | `/api/guerras/previsao` | Previsão da próxima guerra (ML) |
+| `GET` | `/api/torneios` | Análise de torneios escolares |
+| `GET` | `/api/db/status` | Status da conexão com banco |
+| `GET` | `/api/db/tabelas` | Lista tabelas do banco |
+| `GET` | `/api/db/tabelas/{nome_tabela}` | Consulta tabela (com limite) |
+
+---
+
+## 🧪 Scripts de Apoio
+
+- `teste/seed_md.py`: testes rápidos de coleta na API (modo validação)
+- `teste/seed_db.py`: população do banco com dados reais via API
+
+Exemplo de uso:
+
+```powershell
+python .\teste\seed_db.py
+```
 
 ---
 
 ## 🤖 Modelo de Machine Learning
 
-O endpoint `/api/guerras/previsao` treina um **Random Forest Classifier** com o histórico de guerras armazenado no banco.
+O endpoint `GET /api/guerras/previsao` usa **RandomForestClassifier** para prever vitória/derrota com base no histórico de guerras.
 
-**Features (variáveis de entrada):**
-- `batalhas_ganhas` — vitórias em batalha na guerra
-- `batalhas_perdidas` — derrotas em batalha
-- `pontuacao` — Fame total do clã
-- `media_fame_membros` — média de Fame individual
-- `media_vitorias_membros` — média de vitórias por membro
-- `total_batalhas_membros` — total de batalhas da guerra
+Entradas principais:
+- batalhas ganhas/perdidas
+- pontuação (fame)
+- médias por membro
 
-**Target (saída):**
-- `1` (vitória): colocação ≤ 3
-- `0` (derrota): colocação > 3
-
-> São necessárias ao menos **5 guerras** no histórico para treinar o modelo.
+Saída:
+- previsão
+- confiança
+- variáveis mais importantes (`top_features`)
 
 ---
 
+## 📚 Uso em Sala
 
-## 🛠️ Preparando o Ambiente (Setup Inicial)
-Antes de começar, cada aluno deve seguir este passo:
+Sugestões pedagógicas:
+- `ranking`: estatística descritiva e comparação entre jogadores
+- `cartas`: frequência × taxa de vitória (interpretação de correlação)
+- `guerras/previsao`: introdução prática a classificação supervisionada
 
-**1. Clone o Repositório:** Faça o download do projeto para a sua máquina.
-
-```bash
-git clone [https://github.com/ProfMarcos25/RoyaleMetrics.git](https://github.com/ProfMarcos25/RoyaleMetrics.git)
-
-```
-
-
-**1. ATUALIZAÇÃO FAZER TODOD DIA ANTES DE INCIAR O DESENVOLVIMENTO:** 
-
-```bash
-git pull origin ProfSquard
-
-```
-
-
-
-**1.1 Identificação de Usuario** identifique seu nome de usuario ou EMAIL:
-
-
-```bash
-
-git config --global user.email <E-mail do Auno no git>
-
-
-```
-
-
-```bash
-
-git config --global user.name <Login do Aluno no git>
-
-```
-
-
-## 📚 Dicas para a Aula
-
-### Exploração dos dados
-1. Use `/api/ranking` para comparar jogadores e introduzir **estatística descritiva**
-2. Use `/api/cartas` para explicar **correlação** entre frequência e taxa de vitória
-3. Use `/api/guerras` para mostrar **séries temporais** e tendências
-
-### Machine Learning
-1. Explique o **algoritmo Random Forest** usando o resultado de `/api/guerras/previsao`
-2. O campo `top_features` mostra a **importância das variáveis** — ótimo para ensinar feature importance
-3. Discuta com os alunos: _"Se quisermos melhorar a previsão, quais outros dados poderíamos coletar?"_
-
-### Customização
-- As **cores do tema** estão todas em variáveis CSS em `style.css` — peça aos alunos que personalizem
-- Os alunos podem adicionar novos torneios diretamente pelo banco (tabela `torneios` e `partidas_torneio`)
-- O código tem **comentários em português** em todos os trechos complexos
-
-
+---
 
 ## 📄 Licença
 
-Projeto educacional — Curso Técnico em Ciência de Dados.
-Dados fornecidos pela API Oficial do Clash Royale (Supercell).
-*This content is not affiliated with, endorsed, sponsored, or specifically approved by Supercell and Supercell is not responsible for it.*
-=======
-"# RoyaleMetrics" 
+Projeto educacional.
 
+*This content is not affiliated with, endorsed, sponsored, or specifically approved by Supercell and Supercell is not responsible for it.*

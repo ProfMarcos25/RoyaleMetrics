@@ -62,7 +62,8 @@ MENSAGEM_SEM_DADOS: Dict[str, Any] = {
 def gerar_ranking(db: Session) -> Dict[str, Any]:
     """
     Gera o ranking interno dos jogadores em cada clã por troféus.
-    Produz um gráfico de barras horizontais colorido por clã.
+    Produz um gráfico de barras horizontais colorido por clã, com a
+    posição de cada jogador dentro do próprio clã.
 
     Args:
         db: Sessão ativa do banco de dados.
