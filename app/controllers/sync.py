@@ -17,22 +17,22 @@ from app.models.services.coleta import sincronizar_cartas, sincronizar_clan
 logger = logging.getLogger(__name__)
 
 # Prefixo e tag para organizaÃ§Ã£o da documentaÃ§Ã£o automÃ¡tica do FastAPI
-router = APIRouter(prefix="/api/sync", tags=["SincronizaÃ§Ã£o"])
+router = APIRouter(prefix="/api/sync", tags=["Sincronização Manual"])
 
 
 def _ler_tags_clans() -> List[str]:
     """
-    LÃª as tags dos clÃ£s monitorados do arquivo JSON de configuraÃ§Ã£o.
-    O arquivo fica em data/tags_clas.json relativo Ã  raiz do projeto.
+    Lê as tags dos clãs monitorados do arquivo JSON de configuração.
+    O arquivo fica em data/tags_clas.json relativo à raiz do projeto.
 
     Retorna:
-        list[str]: Lista de tags de clÃ£s a sincronizar.
+        list[str]: Lista de tags de clãs a sincronizar.
     """
     caminho = os.path.join(os.path.dirname(__file__), "..", "..", "data", "tags_clas.json")
     caminho = os.path.normpath(caminho)
 
     if not os.path.exists(caminho):
-        logger.warning(f"Arquivo de tags nÃ£o encontrado: {caminho}")
+        logger.warning(f"Arquivo de tags não encontrado: {caminho}")
         return []
 
     with open(caminho, encoding="utf-8") as f:
@@ -43,20 +43,20 @@ def _ler_tags_clans() -> List[str]:
 
 @router.get(
     "",
-    summary="SincronizaÃ§Ã£o manual de dados",
+    summary="Sincronização manual de dados",
     description=(
         "Aciona a coleta imediata de dados da API do Clash Royale "
-        "para todos os clÃ£s cadastrados em data/tags_clas.json. "
-        "Use este endpoint durante a aula para atualizar os dados antes da anÃ¡lise."
+        "para todos os clãs cadastrados em data/tags_clas.json. "
+        "Use este endpoint durante a aula para atualizar os dados antes da análise."
     ),
 )
 def sincronizar_manual(db: Session = Depends(get_db)) -> Dict[str, Any]:
     """
-    Endpoint de sincronizaÃ§Ã£o manual â€” para uso do professor em sala de aula.
-    Sincroniza cartas (catÃ¡logo geral) e todos os clÃ£s cadastrados.
+    Endpoint de sincronização manual â€” para uso do professor em sala de aula.
+    Sincroniza cartas (catálogo geral) e todos os clãs cadastrados.
 
     Retorna:
-        dict: Status da operaÃ§Ã£o e lista de clÃ£s processados.
+        dict: Status da operação e lista de clãs processados.
     """
     tags = _ler_tags_clans()
 

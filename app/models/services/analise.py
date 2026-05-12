@@ -3,6 +3,7 @@ Serviço de Análise de Dados — Royle Metrics
 Realiza consultas SQL e processa os resultados com Pandas,
 gerando gráficos interativos com Plotly para o front-end.
 """
+import json
 import logging
 from typing import Any, Dict
 
@@ -163,7 +164,8 @@ def gerar_ranking(db: Session) -> Dict[str, Any]:
         "height": max(400, len(df) * 35),
     }
 
-    return {"data": [t.to_plotly_json() for t in traces], "layout": layout}
+    fig = go.Figure(data=traces, layout=layout)
+    return json.loads(fig.to_json())
 
 
 def gerar_analise_cartas(db: Session) -> Dict[str, Any]:
@@ -274,7 +276,8 @@ def gerar_analise_cartas(db: Session) -> Dict[str, Any]:
         "height": 550,
     }
 
-    return {"data": [t.to_plotly_json() for t in traces], "layout": layout}
+    fig = go.Figure(data=traces, layout=layout)
+    return json.loads(fig.to_json())
 
 
 def gerar_historico_guerras(db: Session) -> Dict[str, Any]:
@@ -358,7 +361,8 @@ def gerar_historico_guerras(db: Session) -> Dict[str, Any]:
         "height": 450,
     }
 
-    return {"data": [t.to_plotly_json() for t in traces], "layout": layout}
+    fig = go.Figure(data=traces, layout=layout)
+    return json.loads(fig.to_json())
 
 
 def gerar_analise_torneios(db: Session) -> Dict[str, Any]:
@@ -429,4 +433,5 @@ def gerar_analise_torneios(db: Session) -> Dict[str, Any]:
         "showlegend": False,
     }
 
-    return {"data": [trace.to_plotly_json()], "layout": layout}
+    fig = go.Figure(data=[trace], layout=layout)
+    return json.loads(fig.to_json())

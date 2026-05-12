@@ -21,228 +21,245 @@
 <body>
 
   <!-- ================================================
-       HEADER — Logo, status da API e botão de sync
+       SIDEBAR — Menu lateral esquerdo (280px)
        ================================================ -->
-  <header class="header">
-    <div class="header-content">
-
-      <!-- Logo textual com ícone de espada -->
-      <div class="logo">
-        <span class="logo-icon">⚔</span>
-        <div class="logo-text">
-          <span class="logo-title">Royle Metrics</span>
-          <span class="logo-sub">Análise de Clash Royale</span>
-        </div>
-      </div>
-
-      <!-- Área direita: badge de status + botão de sync -->
-      <div class="header-actions">
-        <!-- Badge dinâmico: verde = conectado, vermelho = desconectado -->
-        <div class="status-badge" id="status-badge">
-          <span class="status-dot" id="status-dot"></span>
-          <span id="status-text">Verificando...</span>
-        </div>
-
-        <!-- Botão para acionar coleta manual (professor usa em aula) -->
-        <button class="btn-sync" id="btn-sync" onclick="sincronizar()">
-          <span id="sync-icon">🔄</span>
-          <span id="sync-text">Atualizar dados</span>
-        </button>
-      </div>
-    </div>
-  </header>
-
-  <!-- ================================================
-       MAIN — Conteúdo principal da aplicação
-       ================================================ -->
-  <main class="main-content">
-
-    <!-- Seção de botões de análise -->
-    <section class="secao-analise">
-      <h2 class="secao-titulo">Escolha uma análise</h2>
-      <p class="secao-descricao">
-        Clique em uma opção abaixo para visualizar os dados dos clãs e jogadores.
-        Os dados são atualizados automaticamente a cada 6 horas.
-      </p>
-
-      <!-- Grid de botões de análise (responsivo via CSS Grid) -->
-      <div class="botoes-analise" id="botoes-analise">
-
-        <button
-          class="btn-analise"
-          data-endpoint="/api/ranking"
-          data-label="Ranking de jogadores"
-        >
-          <span class="btn-icon">🏆</span>
-          <span class="btn-texto">Ranking de<br/>jogadores</span>
-        </button>
-
-        <button
-          class="btn-analise"
-          data-endpoint="/api/cartas"
-          data-label="Performance de cartas"
-        >
-          <span class="btn-icon">🃏</span>
-          <span class="btn-texto">Performance<br/>de cartas</span>
-        </button>
-
-        <button
-          class="btn-analise"
-          data-endpoint="/api/guerras"
-          data-label="Histórico de guerras"
-        >
-          <span class="btn-icon">⚔️</span>
-          <span class="btn-texto">Histórico<br/>de guerras</span>
-        </button>
-
-        <button
-          class="btn-analise"
-          data-endpoint="/api/torneios"
-          data-label="Torneios escolares"
-        >
-          <span class="btn-icon">🎓</span>
-          <span class="btn-texto">Torneios<br/>escolares</span>
-        </button>
-
-        <button
-          class="btn-analise btn-ml"
-          data-endpoint="/api/guerras/previsao"
-          data-label="Prever próxima guerra"
-        >
-          <span class="btn-icon">🤖</span>
-          <span class="btn-texto">Prever próxima<br/>guerra (ML)</span>
-        </button>
-
-        <button
-          class="btn-analise btn-db"
-          id="btn-banco"
-          onclick="abrirPainelBanco()"
-          data-label="Banco de dados"
-        >
-          <span class="btn-icon">🗄️</span>
-          <span class="btn-texto">Banco de<br/>dados</span>
-        </button>
-
-      </div>
-    </section>
-
-    <!-- Spinner de loading (visível durante requisições) -->
-    <div id="loading" class="loading" hidden>
-      <div class="loading-pontos">
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
-
-    </div>
-
-    <!-- Card de erro (exibido quando a API retorna erro) -->
-    <div id="erro-card" class="erro-card" hidden>
-      <span class="erro-icon">⚠️</span>
-      <p id="erro-mensagem">Erro ao carregar dados.</p>
-      <button onclick="fecharErro()">Fechar</button>
-    </div>
-
-    <!-- Container principal dos gráficos Plotly -->
-    <div id="grafico-container" class="grafico-container">
-      <!-- Placeholder inicial antes de qualquer análise ser carregada -->
-      <div class="placeholder">
-        <span class="placeholder-icon">⚔</span>
-        <p class="placeholder-texto">Selecione uma análise acima para começar.</p>
-        <p class="placeholder-sub">
-          Se os dados estiverem vazios, clique em <strong>Atualizar dados</strong>
-          para sincronizar com a API do Clash Royale.
-        </p>
+  <aside class="sidebar" id="sidebar">
+    <!-- Logo -->
+    <div class="sidebar-logo">
+      <span class="logo-icon">⚔</span>
+      <div class="logo-text">
+        <span class="logo-title">Royle Metrics</span>
+        <span class="logo-sub">Análise de Clash Royale</span>
       </div>
     </div>
 
-    <!-- Card de previsão de ML (oculto por padrão, exibido para /api/guerras/previsao) -->
-    <div id="previsao-card" class="previsao-card" hidden>
-      <div class="previsao-header">
-        <h2 class="previsao-titulo">🤖 Previsão ML — Próxima Guerra</h2>
-        <span class="previsao-badge" id="previsao-badge">—</span>
-      </div>
-
-      <div class="previsao-body">
-        <!-- Resultado e confiança -->
-        <div class="previsao-resultado">
-          <div class="previsao-item">
-            <span class="previsao-label">Resultado previsto</span>
-            <span class="previsao-valor" id="previsao-resultado-texto">—</span>
-          </div>
-          <div class="previsao-item">
-            <span class="previsao-label">Confiança do modelo</span>
-            <span class="previsao-valor" id="previsao-confianca">—</span>
-          </div>
-          <div class="previsao-item">
-            <span class="previsao-label">Amostras de treino</span>
-            <span class="previsao-valor" id="previsao-amostras">—</span>
-          </div>
-        </div>
-
-        <!-- Mensagem educativa -->
-        <div class="previsao-mensagem" id="previsao-mensagem-box">
-          <p id="previsao-mensagem-texto">—</p>
-        </div>
-
-        <!-- Importância das variáveis (features) -->
-        <div class="previsao-features">
-          <h3>📊 Importância das variáveis</h3>
-          <div id="previsao-features-lista" class="features-lista">
-            <!-- Preenchido dinamicamente pelo app.js -->
-          </div>
-        </div>
-
-        <!-- Histórico recente das últimas guerras -->
-        <div class="previsao-historico">
-          <h3>📅 Histórico recente (últimas guerras)</h3>
-          <div id="previsao-historico-tabela" class="historico-tabela-wrapper">
-            <!-- Preenchido dinamicamente pelo app.js -->
-          </div>
-        </div>
+    <!-- Status da API -->
+    <div class="sidebar-status">
+      <div class="status-badge" id="status-badge">
+        <span class="status-dot" id="status-dot"></span>
+        <span id="status-text">Verificando...</span>
       </div>
     </div>
 
-  </main>
+    <!-- Menu de navegação -->
+    <nav class="sidebar-nav">
+      <span class="nav-label">Análises</span>
 
-  <!-- ================================================
-       PAINEL DO BANCO DE DADOS (oculto por padrão)
-       ================================================ -->
-  <div id="painel-banco" class="painel-banco" hidden>
-    <div class="painel-banco-header">
-      <h2 class="painel-banco-titulo">🗄️ Banco de Dados</h2>
-      <button class="painel-banco-fechar" onclick="fecharPainelBanco()">✕ Fechar</button>
-    </div>
-
-    <!-- Status da conexão -->
-    <div class="banco-status-row">
-      <button class="btn-banco-acao" onclick="testarConexaoBanco()">
-        🔌 Testar Conexão
+      <button
+        class="nav-item"
+        data-endpoint="/api/ranking"
+        data-label="Ranking de jogadores"
+      >
+        <span class="nav-icon">🏆</span>
+        <span class="nav-texto">Ranking de jogadores</span>
       </button>
-      <div id="banco-status-msg" class="banco-status-msg">—</div>
-    </div>
 
-    <!-- Seleção de tabela -->
-    <div class="banco-controles">
-      <div class="banco-select-grupo">
-        <label for="banco-select-tabela">Tabela:</label>
-        <select id="banco-select-tabela" class="banco-select">
-          <option value="">— selecione —</option>
-        </select>
-      </div>
-      <div class="banco-select-grupo">
-        <label for="banco-limite">Limite de linhas:</label>
-        <input id="banco-limite" class="banco-input" type="number" value="20" min="1" max="50" />
-      </div>
-      <button class="btn-banco-acao" onclick="selecionarTabela()">
-        🔍 Executar SELECT
+      <button
+        class="nav-item"
+        data-endpoint="/api/cartas"
+        data-label="Performance de cartas"
+      >
+        <span class="nav-icon">🃏</span>
+        <span class="nav-texto">Performance de cartas</span>
+      </button>
+
+      <button
+        class="nav-item"
+        data-endpoint="/api/guerras"
+        data-label="Histórico de guerras"
+      >
+        <span class="nav-icon">⚔️</span>
+        <span class="nav-texto">Histórico de guerras</span>
+      </button>
+
+      <button
+        class="nav-item"
+        data-endpoint="/api/torneios"
+        data-label="Torneios escolares"
+      >
+        <span class="nav-icon">🎓</span>
+        <span class="nav-texto">Torneios escolares</span>
+      </button>
+
+      <span class="nav-label">Machine Learning</span>
+
+      <button
+        class="nav-item nav-ml"
+        data-endpoint="/api/guerras/previsao"
+        data-label="Prever próxima guerra"
+      >
+        <span class="nav-icon">🤖</span>
+        <span class="nav-texto">Prever próxima guerra</span>
+      </button>
+
+      <span class="nav-label">Ferramentas</span>
+
+      <button
+        class="nav-item nav-db"
+        id="btn-banco"
+        data-label="Banco de dados"
+      >
+        <span class="nav-icon">🗄️</span>
+        <span class="nav-texto">Banco de dados</span>
+      </button>
+    </nav>
+
+    <!-- Botão de sync no rodapé da sidebar -->
+    <div class="sidebar-footer">
+      <button class="btn-sync" id="btn-sync">
+        <span id="sync-icon">🔄</span>
+        <span id="sync-text">Atualizar dados</span>
       </button>
     </div>
+  </aside>
 
-    <!-- Resultado -->
-    <div id="banco-resultado" class="banco-resultado">
-      <p class="banco-placeholder">Teste a conexão e selecione uma tabela para ver os dados.</p>
+  <!-- Overlay mobile -->
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <!-- Botão mobile para abrir sidebar -->
+  <button class="sidebar-toggle" id="sidebar-toggle">☰</button>
+
+  <!-- ================================================
+       ÁREA DE CONTEÚDO PRINCIPAL (direita da sidebar)
+       ================================================ -->
+  <div class="content-wrapper">
+
+    <!-- Coluna de dados / análise -->
+    <main class="content-main">
+
+      <!-- Cabeçalho do conteúdo -->
+      <div class="content-header">
+        <h1 class="content-titulo" id="content-titulo">Dashboard</h1>
+      </div>
+
+      <!-- Sistema de abas: Projeto | Gráfico | Dados API -->
+      <div class="tabs-header">
+        <button class="tab-btn ativo" id="tab-projeto-btn" data-tab="projeto">
+          🎮 Projeto
+        </button>
+        <button class="tab-btn" id="tab-grafico-btn" data-tab="grafico">
+          📊 Gráfico
+        </button>
+        <button class="tab-btn" id="tab-dados-btn" data-tab="dados">
+          📋 Dados API
+        </button>
+      </div>
+
+      <!-- Aba Projeto (imagem cinematográfica - padrão) -->
+      <div class="tab-panel" id="tab-projeto">
+        <div class="projeto-image-container">
+          <img
+            src="/static/royale_metrics_img_v0.1.jpeg"
+            alt="Royle Metrics — Visual cinematográfico"
+            class="hero-image"
+          />
+        </div>
+      </div>
+
+      <!-- Aba Gráfico -->
+      <div class="tab-panel" id="tab-grafico" hidden>
+        <!-- Container do gráfico Plotly -->
+        <div id="grafico-container" class="grafico-container">
+          <div class="placeholder" id="placeholder-grafico">
+            <span class="placeholder-icon">⚔</span>
+            <p class="placeholder-texto">Selecione uma análise no menu lateral.</p>
+            <p class="placeholder-sub">
+              Se os dados estiverem vazios, clique em <strong>Atualizar dados</strong>
+              para sincronizar com a API do Clash Royale.
+            </p>
+          </div>
+        </div>
+
+        <!-- Card de previsão ML -->
+        <div id="previsao-card" class="previsao-card" hidden>
+          <div class="previsao-header">
+            <h2 class="previsao-titulo">🤖 Previsão ML — Próxima Guerra</h2>
+            <span class="previsao-badge" id="previsao-badge">—</span>
+          </div>
+          <div class="previsao-body">
+            <div class="previsao-resultado">
+              <div class="previsao-item">
+                <span class="previsao-label">Resultado previsto</span>
+                <span class="previsao-valor" id="previsao-resultado-texto">—</span>
+              </div>
+              <div class="previsao-item">
+                <span class="previsao-label">Confiança do modelo</span>
+                <span class="previsao-valor" id="previsao-confianca">—</span>
+              </div>
+              <div class="previsao-item">
+                <span class="previsao-label">Amostras de treino</span>
+                <span class="previsao-valor" id="previsao-amostras">—</span>
+              </div>
+            </div>
+            <div class="previsao-mensagem" id="previsao-mensagem-box">
+              <p id="previsao-mensagem-texto">—</p>
+            </div>
+            <div class="previsao-features">
+              <h3>📊 Importância das variáveis</h3>
+              <div id="previsao-features-lista" class="features-lista"></div>
+            </div>
+            <div class="previsao-historico">
+              <h3>📅 Histórico recente (últimas guerras)</h3>
+              <div id="previsao-historico-tabela" class="historico-tabela-wrapper"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Aba Dados API -->
+      <div class="tab-panel" id="tab-dados" hidden>
+        <div id="dados-api-container" class="dados-api-container">
+          <div class="placeholder" id="placeholder-dados">
+            <span class="placeholder-icon">📋</span>
+            <p class="placeholder-texto">Selecione uma análise para ver os dados brutos da API.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Painel do Banco de Dados (oculto por padrão) -->
+      <div id="painel-banco" class="painel-banco" hidden>
+        <div class="painel-banco-header">
+          <h2 class="painel-banco-titulo">🗄️ Banco de Dados</h2>
+          <button class="painel-banco-fechar" id="btn-fechar-banco">✕ Fechar</button>
+        </div>
+        <div class="banco-status-row">
+          <button class="btn-banco-acao" id="btn-testar-conexao">🔌 Testar Conexão</button>
+          <div id="banco-status-msg" class="banco-status-msg">—</div>
+        </div>
+        <div class="banco-controles">
+          <div class="banco-select-grupo">
+            <label for="banco-select-tabela">Tabela:</label>
+            <select id="banco-select-tabela" class="banco-select">
+              <option value="">— selecione —</option>
+            </select>
+          </div>
+          <div class="banco-select-grupo">
+            <label for="banco-limite">Limite de linhas:</label>
+            <input id="banco-limite" class="banco-input" type="number" value="20" min="1" max="50" />
+          </div>
+          <button class="btn-banco-acao" id="btn-executar-select">🔍 Executar SELECT</button>
+        </div>
+        <div id="banco-resultado" class="banco-resultado">
+          <p class="banco-placeholder">Teste a conexão e selecione uma tabela para ver os dados.</p>
+        </div>
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- Loading spinner (fixo na parte inferior) -->
+  <div id="loading" class="loading loading-bottom" hidden>
+    <div class="loading-pontos">
+      <span></span><span></span><span></span>
     </div>
+  </div>
+
+  <!-- Card de erro (fixo na parte inferior) -->
+  <div id="erro-card" class="erro-card erro-bottom" hidden>
+    <span class="erro-icon">⚠️</span>
+    <p id="erro-mensagem">Erro ao carregar dados.</p>
+    <button id="btn-fechar-erro">Fechar</button>
   </div>
 
   <!-- ================================================
