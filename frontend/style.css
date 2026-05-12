@@ -1,45 +1,42 @@
 /* ============================================================
    Royle Metrics — Folha de Estilos Principal
+   Layout: Sidebar (280px) + Conteúdo com Abas + Imagem Cinematográfica
    Tema escuro inspirado em jogos de estratégia medieval/fantasy
    Fonte: Rajdhani (Google Fonts) — pesos 400, 500, 700
    ============================================================ */
 
 /* ----------------------------------------------------------
-   VARIÁVEIS DE COR — fácil de customizar pelos alunos
-   Para mudar o tema, basta alterar os valores aqui embaixo
+   VARIÁVEIS DE COR
    ---------------------------------------------------------- */
 :root {
-  /* Fundos */
-  --bg-primary:      #0a0c14;   /* fundo geral da página */
-  --bg-card:         #12152a;   /* fundo dos cards e painéis */
-  --bg-card-hover:   #1a1f38;   /* fundo ao passar o mouse */
-  --bg-header:       #0d1022;   /* fundo do cabeçalho */
-  --bg-footer:       #080a11;   /* fundo do rodapé */
+  --bg-primary:      #0a0c14;
+  --bg-card:         #12152a;
+  --bg-card-hover:   #1a1f38;
+  --bg-header:       #0d1022;
+  --bg-footer:       #080a11;
+  --bg-sidebar:      #0d1022;
 
-  /* Cores de destaque */
-  --accent-gold:     #e8c94a;   /* dourado — cor principal de destaque */
-  --accent-blue:     #4a9eff;   /* azul — links e elementos secundários */
-  --accent-green:    #34d399;   /* verde — vitórias e sucessos */
-  --accent-red:      #ef4444;   /* vermelho — derrotas e erros */
-  --accent-purple:   #a855f7;   /* roxo — cartas épicas / ML */
+  --accent-gold:     #e8c94a;
+  --accent-blue:     #4a9eff;
+  --accent-green:    #34d399;
+  --accent-red:      #ef4444;
+  --accent-purple:   #a855f7;
 
-  /* Textos */
-  --text-primary:    #e2e8f0;   /* texto principal claro */
-  --text-muted:      #8892a4;   /* texto secundário / dicas */
-  --text-highlight:  #ffffff;   /* texto em destaque */
+  --text-primary:    #e2e8f0;
+  --text-muted:      #8892a4;
+  --text-highlight:  #ffffff;
 
-  /* Bordas e divisores */
-  --border-color:    #1e2540;   /* bordas suaves */
-  --border-accent:   #e8c94a44; /* borda dourada translúcida */
+  --border-color:    #1e2540;
+  --border-accent:   #e8c94a44;
 
-  /* Espaçamentos padrão */
-  --radius:          8px;       /* arredondamento dos cards */
-  --radius-lg:       16px;      /* arredondamento maior */
+  --radius:          8px;
+  --radius-lg:       16px;
 
-  /* Sombras */
   --shadow-card:     0 4px 24px rgba(0, 0, 0, 0.5);
   --shadow-btn:      0 0 12px rgba(232, 201, 74, 0.3);
   --shadow-hover:    0 0 24px rgba(232, 201, 74, 0.5);
+
+  --sidebar-width:   280px;
 }
 
 /* ----------------------------------------------------------
@@ -79,39 +76,36 @@ a:hover {
 }
 
 /* ----------------------------------------------------------
-   HEADER — Cabeçalho fixo com logo e ações
+   SIDEBAR — Menu lateral fixo (280px)
    ---------------------------------------------------------- */
-.header {
-  background-color: var(--bg-header);
-  border-bottom: 2px solid var(--border-color);
-  position: sticky;
+.sidebar {
+  position: fixed;
   top: 0;
-  z-index: 100;
-  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.6);
-}
-
-.header-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 16px 24px;
+  left: 0;
+  width: var(--sidebar-width);
+  height: 100vh;
+  background-color: var(--bg-sidebar);
+  border-right: 2px solid var(--border-color);
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  z-index: 200;
+  overflow-y: auto;
+  transition: transform 0.3s ease;
 }
 
-/* Logo */
-.logo {
+/* Logo na sidebar */
+.sidebar-logo {
   display: flex;
   align-items: center;
   gap: 12px;
+  padding: 24px 20px 16px;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .logo-icon {
   font-size: 2rem;
   filter: drop-shadow(0 0 8px var(--accent-gold));
-  font-family: 'Segoe UI Emoji', 'Segoe UI Symbol', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
+  font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
 }
 
 .logo-text {
@@ -120,7 +114,7 @@ a:hover {
 }
 
 .logo-title {
-  font-size: 1.6rem;
+  font-size: 1.4rem;
   font-weight: 700;
   color: var(--accent-gold);
   letter-spacing: 1px;
@@ -129,22 +123,19 @@ a:hover {
 }
 
 .logo-sub {
-  font-size: 0.75rem;
+  font-size: 0.65rem;
   color: var(--text-muted);
   font-weight: 400;
   letter-spacing: 2px;
   text-transform: uppercase;
 }
 
-/* Área de ações do header */
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
+/* Status badge na sidebar */
+.sidebar-status {
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border-color);
 }
 
-/* Badge de status da API */
 .status-badge {
   display: flex;
   align-items: center;
@@ -153,7 +144,7 @@ a:hover {
   border: 1px solid var(--border-color);
   border-radius: 999px;
   padding: 6px 14px;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 500;
   color: var(--text-muted);
   cursor: default;
@@ -178,19 +169,101 @@ a:hover {
   background-color: var(--accent-red);
 }
 
-/* Botão de sincronização manual */
+/* Navegação da sidebar */
+.sidebar-nav {
+  flex: 1;
+  padding: 8px 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  padding: 16px 20px 6px;
+  display: block;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: none;
+  border: none;
+  border-left: 3px solid transparent;
+  color: var(--text-primary);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  width: 100%;
+}
+
+.nav-item:hover {
+  background-color: var(--bg-card-hover);
+  color: var(--accent-gold);
+  border-left-color: var(--accent-gold);
+}
+
+.nav-item.ativo {
+  background-color: rgba(232, 201, 74, 0.1);
+  color: var(--accent-gold);
+  border-left-color: var(--accent-gold);
+  font-weight: 700;
+}
+
+.nav-item.nav-ml:hover,
+.nav-item.nav-ml.ativo {
+  color: var(--accent-purple);
+  border-left-color: var(--accent-purple);
+  background-color: rgba(168, 85, 247, 0.1);
+}
+
+.nav-item.nav-db:hover,
+.nav-item.nav-db.ativo {
+  color: var(--accent-blue);
+  border-left-color: var(--accent-blue);
+  background-color: rgba(74, 158, 255, 0.1);
+}
+
+.nav-icon {
+  font-size: 1.2rem;
+  width: 24px;
+  text-align: center;
+  flex-shrink: 0;
+  font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
+}
+
+.nav-texto {
+  flex: 1;
+}
+
+/* Footer da sidebar com botão sync */
+.sidebar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border-color);
+}
+
 .btn-sync {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
+  width: 100%;
   background-color: transparent;
   border: 2px solid var(--accent-gold);
   color: var(--accent-gold);
   font-family: 'Rajdhani', sans-serif;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 700;
   letter-spacing: 0.5px;
-  padding: 8px 18px;
+  padding: 10px 16px;
   border-radius: var(--radius);
   cursor: pointer;
   transition: background-color 0.2s, box-shadow 0.2s, transform 0.1s;
@@ -211,110 +284,230 @@ a:hover {
   cursor: not-allowed;
 }
 
-/* ----------------------------------------------------------
-   MAIN CONTENT
-   ---------------------------------------------------------- */
-.main-content {
-  flex: 1;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 32px 24px;
-  width: 100%;
+/* Sidebar overlay (mobile) */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 150;
 }
 
-/* ----------------------------------------------------------
-   SEÇÃO DE ANÁLISE — Título, descrição e botões
-   ---------------------------------------------------------- */
-.secao-analise {
-  margin-bottom: 32px;
+.sidebar-overlay.visivel {
+  display: block;
 }
 
-.secao-titulo {
+/* Toggle button (mobile) */
+.sidebar-toggle {
+  display: none;
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 250;
+  background: var(--bg-card);
+  border: 2px solid var(--accent-gold);
+  color: var(--accent-gold);
   font-size: 1.4rem;
+  padding: 6px 12px;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+/* ----------------------------------------------------------
+   CONTENT WRAPPER — Layout principal com 2 colunas
+   ---------------------------------------------------------- */
+.content-wrapper {
+  margin-left: var(--sidebar-width);
+  flex: 1;
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Coluna principal de dados/gráficos */
+.content-main {
+  flex: 1;
+  padding: 24px 32px;
+  min-width: 0; /* evita overflow em flex */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Cabeçalho do conteúdo */
+.content-header {
+  margin-bottom: 20px;
+}
+
+.content-titulo {
+  font-size: 1.5rem;
   font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: 8px;
   text-transform: uppercase;
   letter-spacing: 1px;
 }
 
-.secao-descricao {
-  color: var(--text-muted);
-  font-size: 0.95rem;
-  margin-bottom: 24px;
-  max-width: 700px;
-}
-
-/* Grid responsivo de botões de análise */
-.botoes-analise {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  gap: 16px;
-}
-
-/* Botão de análise padrão */
-.btn-analise {
+/* ----------------------------------------------------------
+   SISTEMA DE ABAS — Gráfico / Dados API
+   ---------------------------------------------------------- */
+.tabs-header {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  background-color: var(--bg-card);
-  border: 2px solid var(--border-color);
-  color: var(--text-primary);
+  gap: 0;
+  border-bottom: 2px solid var(--border-color);
+  margin-bottom: 20px;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--text-muted);
   font-family: 'Rajdhani', sans-serif;
   font-size: 0.95rem;
-  font-weight: 500;
-  padding: 20px 16px;
-  border-radius: var(--radius-lg);
+  font-weight: 600;
+  padding: 10px 24px;
   cursor: pointer;
-  text-align: center;
-  transition: all 0.25s ease;
-  line-height: 1.3;
-  min-height: 110px;
-}
-
-.btn-analise:hover {
-  background-color: var(--bg-card-hover);
-  border-color: var(--accent-gold);
-  color: var(--accent-gold);
-  box-shadow: var(--shadow-hover);
-  transform: translateY(-2px);
-}
-
-.btn-analise.ativo {
-  background-color: var(--accent-gold);
-  border-color: var(--accent-gold);
-  color: var(--bg-primary);
-  font-weight: 700;
-}
-
-/* Botão especial para ML (borda roxa) */
-.btn-analise.btn-ml {
-  border-color: var(--accent-purple);
-}
-
-.btn-analise.btn-ml:hover {
-  border-color: var(--accent-purple);
-  color: var(--accent-purple);
-  box-shadow: 0 0 24px rgba(168, 85, 247, 0.4);
-}
-
-.btn-icon {
-  font-size: 1.8rem;
-  line-height: 1;
-  font-family: 'Segoe UI Emoji', 'Segoe UI Symbol', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
-}
-
-.btn-texto {
-  font-size: 0.9rem;
-  font-weight: 700;
+  transition: all 0.2s ease;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
+.tab-btn:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-card-hover);
+}
+
+.tab-btn.ativo {
+  color: var(--accent-gold);
+  border-bottom-color: var(--accent-gold);
+}
+
+.tab-panel {
+  flex: 1;
+  animation: fadeIn 0.3s ease;
+}
+
 /* ----------------------------------------------------------
-   LOADING SPINNER — 3 pontos pulsando
+   ABA PROJETO — Imagem cinematográfica 1080×1920
+   ---------------------------------------------------------- */
+.projeto-image-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: calc(100vh - 160px);
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  background-color: var(--bg-card);
+}
+
+.hero-image {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+/* ----------------------------------------------------------
+   GRÁFICO PLOTLY
+   ---------------------------------------------------------- */
+.grafico-container {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  min-height: 400px;
+  box-shadow: var(--shadow-card);
+  transition: border-color 0.3s;
+}
+
+/* Placeholder */
+.placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 48px;
+  text-align: center;
+}
+
+.placeholder-icon {
+  font-size: 4rem;
+  opacity: 0.3;
+  filter: grayscale(1);
+  font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
+}
+
+.placeholder-texto {
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.placeholder-sub {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  opacity: 0.7;
+  max-width: 400px;
+}
+
+/* ----------------------------------------------------------
+   DADOS API (aba de dados brutos)
+   ---------------------------------------------------------- */
+.dados-api-container {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  min-height: 400px;
+  box-shadow: var(--shadow-card);
+  overflow-x: auto;
+}
+
+.dados-tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.dados-tabela th {
+  text-align: left;
+  padding: 10px 14px;
+  background-color: var(--bg-primary);
+  color: var(--accent-gold);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.75rem;
+  border-bottom: 2px solid var(--accent-gold);
+  white-space: nowrap;
+}
+
+.dados-tabela td {
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dados-tabela tbody tr:hover td {
+  background-color: var(--bg-card-hover);
+}
+
+.dados-info {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.dados-info strong {
+  color: var(--accent-gold);
+}
+
+/* ----------------------------------------------------------
+   LOADING SPINNER
    ---------------------------------------------------------- */
 .loading {
   display: flex;
@@ -324,13 +517,37 @@ a:hover {
   padding: 48px;
 }
 
+/* Loading e erro fixos na parte inferior */
+.loading-bottom {
+  position: fixed;
+  bottom: 48px;
+  left: var(--sidebar-width);
+  right: 0;
+  z-index: 100;
+  padding: 16px;
+  background: rgba(10, 12, 20, 0.9);
+  border-top: 1px solid var(--border-color);
+}
+
+.erro-bottom {
+  position: fixed;
+  bottom: 48px;
+  left: var(--sidebar-width);
+  right: 0;
+  z-index: 100;
+  margin: 0;
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  border-bottom: none;
+}
+
 .loading-pontos {
   display: flex;
   gap: 10px;
   align-items: center;
 }
 
-/* Cada ponto pisca em sequência usando animation-delay */
 .loading-pontos span {
   width: 14px;
   height: 14px;
@@ -344,20 +561,8 @@ a:hover {
 .loading-pontos span:nth-child(3) { animation-delay: 0.4s; }
 
 @keyframes piscar {
-  0%, 80%, 100% {
-    opacity: 0.2;
-    transform: scale(0.7);
-  }
-  40% {
-    opacity: 1;
-    transform: scale(1.1);
-  }
-}
-
-.loading-texto {
-  color: var(--text-muted);
-  font-size: 0.95rem;
-  letter-spacing: 1px;
+  0%, 80%, 100% { opacity: 0.2; transform: scale(0.7); }
+  40% { opacity: 1; transform: scale(1.1); }
 }
 
 /* ----------------------------------------------------------
@@ -375,10 +580,7 @@ a:hover {
   flex-wrap: wrap;
 }
 
-.erro-icon {
-  font-size: 1.5rem;
-  flex-shrink: 0;
-}
+.erro-icon { font-size: 1.5rem; flex-shrink: 0; }
 
 .erro-card p {
   flex: 1;
@@ -404,56 +606,6 @@ a:hover {
 }
 
 /* ----------------------------------------------------------
-   CONTAINER DO GRÁFICO PLOTLY
-   ---------------------------------------------------------- */
-.grafico-container {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  padding: 24px;
-  min-height: 400px;
-  box-shadow: var(--shadow-card);
-  transition: border-color 0.3s;
-}
-
-.grafico-container:has(#placeholder) {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Estado placeholder (antes de carregar qualquer gráfico) */
-.placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  padding: 48px;
-  text-align: center;
-}
-
-.placeholder-icon {
-  font-size: 4rem;
-  opacity: 0.3;
-  filter: grayscale(1);
-  font-family: 'Segoe UI Emoji', 'Segoe UI Symbol', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
-}
-
-.placeholder-texto {
-  font-size: 1.1rem;
-  color: var(--text-muted);
-  font-weight: 500;
-}
-
-.placeholder-sub {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  opacity: 0.7;
-  max-width: 400px;
-}
-
-/* ----------------------------------------------------------
    CARD DE PREVISÃO ML
    ---------------------------------------------------------- */
 .previsao-card {
@@ -465,18 +617,9 @@ a:hover {
   box-shadow: var(--shadow-card);
 }
 
-/* Borda lateral colorida por resultado */
-.previsao-card.vitoria {
-  border-left: 4px solid var(--accent-green);
-}
-
-.previsao-card.derrota {
-  border-left: 4px solid var(--accent-red);
-}
-
-.previsao-card.sem-dados {
-  border-left: 4px solid var(--text-muted);
-}
+.previsao-card.vitoria { border-left: 4px solid var(--accent-green); }
+.previsao-card.derrota { border-left: 4px solid var(--accent-red); }
+.previsao-card.sem-dados { border-left: 4px solid var(--text-muted); }
 
 .previsao-header {
   display: flex;
@@ -497,7 +640,7 @@ a:hover {
 }
 
 .previsao-badge {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 700;
   padding: 6px 16px;
   border-radius: 999px;
@@ -517,14 +660,12 @@ a:hover {
   border: 1px solid var(--accent-red);
 }
 
-/* Corpo do card de previsão */
 .previsao-body {
   display: flex;
   flex-direction: column;
   gap: 24px;
 }
 
-/* Métricas principais */
 .previsao-resultado {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -554,7 +695,6 @@ a:hover {
   color: var(--accent-gold);
 }
 
-/* Mensagem educativa */
 .previsao-mensagem {
   background-color: rgba(74, 158, 255, 0.08);
   border: 1px solid rgba(74, 158, 255, 0.3);
@@ -568,7 +708,6 @@ a:hover {
   line-height: 1.7;
 }
 
-/* Lista de features */
 .previsao-features h3,
 .previsao-historico h3 {
   font-size: 1rem;
@@ -594,7 +733,7 @@ a:hover {
 .feature-nome {
   font-size: 0.85rem;
   color: var(--text-muted);
-  min-width: 220px;
+  min-width: 200px;
   flex-shrink: 0;
 }
 
@@ -621,10 +760,7 @@ a:hover {
   text-align: right;
 }
 
-/* Tabela do histórico de guerras */
-.historico-tabela-wrapper {
-  overflow-x: auto;
-}
+.historico-tabela-wrapper { overflow-x: auto; }
 
 .historico-tabela {
   width: 100%;
@@ -650,123 +786,19 @@ a:hover {
   color: var(--text-primary);
 }
 
-.historico-tabela tr:last-child td {
-  border-bottom: none;
-}
-
-.historico-tabela tr:hover td {
-  background-color: var(--bg-card-hover);
-}
+.historico-tabela tr:last-child td { border-bottom: none; }
+.historico-tabela tr:hover td { background-color: var(--bg-card-hover); }
 
 /* ----------------------------------------------------------
-   FOOTER
-   ---------------------------------------------------------- */
-.footer {
-  background-color: var(--bg-footer);
-  border-top: 1px solid var(--border-color);
-  padding: 16px 24px;
-  text-align: center;
-}
-
-.footer p {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-}
-
-/* ----------------------------------------------------------
-   ANIMAÇÕES
-   ---------------------------------------------------------- */
-@keyframes pulsar {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.5; }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-.grafico-container,
-.previsao-card {
-  animation: fadeIn 0.4s ease;
-}
-
-/* ----------------------------------------------------------
-   RESPONSIVIDADE — Mobile e tablets
-   ---------------------------------------------------------- */
-@media (max-width: 768px) {
-  .header-content {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .header-actions {
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  .logo-title {
-    font-size: 1.3rem;
-  }
-
-  .main-content {
-    padding: 20px 16px;
-  }
-
-  .botoes-analise {
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  }
-
-  .btn-analise {
-    min-height: 90px;
-    padding: 16px 12px;
-  }
-
-  .previsao-resultado {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .feature-nome {
-    min-width: 150px;
-  }
-}
-
-@media (max-width: 480px) {
-  .botoes-analise {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .previsao-resultado {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* ============================================================
-   BOTÃO DE BANCO DE DADOS
-   ============================================================ */
-.btn-db {
-  border-color: var(--accent-blue);
-}
-
-.btn-db:hover,
-.btn-db.ativo {
-  background: rgba(74, 158, 255, 0.15);
-  border-color: var(--accent-blue);
-  box-shadow: 0 0 18px rgba(74, 158, 255, 0.4);
-}
-
-/* ============================================================
    PAINEL DO BANCO DE DADOS
-   ============================================================ */
+   ---------------------------------------------------------- */
 .painel-banco {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  margin: 2rem auto;
-  max-width: 1100px;
   padding: 1.5rem 2rem 2rem;
   box-shadow: var(--shadow-card);
+  margin-top: 20px;
 }
 
 .painel-banco-header {
@@ -801,7 +833,6 @@ a:hover {
   color: var(--accent-red);
 }
 
-/* Linha de status */
 .banco-status-row {
   display: flex;
   align-items: center;
@@ -817,9 +848,8 @@ a:hover {
 }
 
 .banco-status-msg.ok   { color: var(--accent-green); }
-.banco-status-msg.erro { color: var(--accent-red);   }
+.banco-status-msg.erro { color: var(--accent-red); }
 
-/* Controles de seleção */
 .banco-controles {
   display: flex;
   align-items: flex-end;
@@ -862,7 +892,6 @@ a:hover {
   outline: none;
 }
 
-/* Botão de ação do banco */
 .btn-banco-acao {
   background: rgba(74, 158, 255, 0.12);
   border: 1px solid var(--accent-blue);
@@ -882,10 +911,7 @@ a:hover {
   box-shadow: 0 0 12px rgba(74, 158, 255, 0.35);
 }
 
-/* Área de resultado */
-.banco-resultado {
-  min-height: 80px;
-}
+.banco-resultado { min-height: 80px; }
 
 .banco-placeholder {
   color: var(--text-muted);
@@ -903,7 +929,6 @@ a:hover {
 
 .banco-info strong { color: var(--accent-blue); }
 
-/* Tabela de dados do banco */
 .banco-tabela-wrapper {
   overflow-x: auto;
   border-radius: var(--radius);
@@ -917,9 +942,7 @@ a:hover {
   width: 100%;
 }
 
-.banco-tabela thead {
-  background: rgba(74, 158, 255, 0.1);
-}
+.banco-tabela thead { background: rgba(74, 158, 255, 0.1); }
 
 .banco-tabela th {
   border-bottom: 1px solid var(--accent-blue);
@@ -943,10 +966,89 @@ a:hover {
   white-space: nowrap;
 }
 
-.banco-tabela tbody tr:hover {
-  background: var(--bg-card-hover);
+.banco-tabela tbody tr:hover { background: var(--bg-card-hover); }
+.banco-tabela tbody tr:last-child td { border-bottom: none; }
+
+/* ----------------------------------------------------------
+   FOOTER
+   ---------------------------------------------------------- */
+.footer {
+  margin-left: var(--sidebar-width);
+  background-color: var(--bg-footer);
+  border-top: 1px solid var(--border-color);
+  padding: 16px 24px;
+  text-align: center;
 }
 
-.banco-tabela tbody tr:last-child td {
-  border-bottom: none;
+.footer p {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* ----------------------------------------------------------
+   ANIMAÇÕES
+   ---------------------------------------------------------- */
+@keyframes pulsar {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.grafico-container,
+.previsao-card,
+.dados-api-container {
+  animation: fadeIn 0.4s ease;
+}
+
+/* ----------------------------------------------------------
+   RESPONSIVIDADE
+   ---------------------------------------------------------- */
+
+/* Mobile: sidebar colapsável */
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+
+  .sidebar.aberta {
+    transform: translateX(0);
+  }
+
+  .sidebar-toggle {
+    display: block;
+  }
+
+  .content-wrapper {
+    margin-left: 0;
+  }
+
+  .footer {
+    margin-left: 0;
+  }
+
+  .content-main {
+    padding: 16px;
+    padding-top: 56px; /* espaço para botão toggle */
+  }
+
+  .tabs-header {
+    flex-wrap: wrap;
+  }
+
+  .tab-btn {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+  }
+
+  .feature-nome {
+    min-width: 140px;
+  }
+
+  .previsao-resultado {
+    grid-template-columns: 1fr;
+  }
 }
