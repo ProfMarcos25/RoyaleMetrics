@@ -54,6 +54,7 @@ const elTabDadosBtn   = document.getElementById("tab-dados-btn");
 let ultimosDados      = null;
 let ultimoEndpoint    = null;
 let ultimoLabel       = null;
+let ultimaTabela      = null;  // tabela exibida no momento (para CSV)
 
 // ============================================================
 // STATUS DA API
@@ -556,6 +557,144 @@ async function selecionarTabela() {
 }
 
 // ============================================================
+// ADMINISTRAÇÃO — Seed, Reset, CSV
+// ============================================================
+
+/**
+ * Inicia o seed do banco via API e faz polling do status.
+ */
+async function executarSeed() {
+  if (!confirm("📥 Deseja popular o banco com dados da API do Clash Royale?\nIsso pode levar alguns minutos.")) return;
+
+  trocarAba("dados");
+  elContentTitulo.textContent = "Inserindo dados...";
+  elDadosApi.innerHTML = `<div class="placeholder">
+    <span class="placeholder-icon">⏳</span>
+    <p class="placeholder-texto">Populando banco de dados via API...</p>
+    <p class="placeholder-sub">Aguarde, isso pode levar alguns minutos.</p>
+  </div>`;
+
+  try {
+    const res = await fetch(`${API_BASE}/api/admin/seed`, { method: "POST" });
+    const data = await res.json();
+
+    if (res.status === 409) {
+      exibirErro(data.mensagem);
+      return;
+    }
+
+    // Polling do status
+    const intervalo = setInterval(async () => {
+      try {
+        const statusRes = await fetch(`${API_BASE}/api/admin/seed/status`);
+        const statusData = await statusRes.json();
+
+        if (statusData.status !== "rodando") {
+          clearInterval(intervalo);
+          elContentTitulo.textContent = "Seed concluído";
+
+          if (statusData.status === "ok") {
+            const r = statusData.resumo || {};
+            elDadosApi.innerHTML = `<div class="placeholder">
+              <span class="placeholder-icon">✅</span>
+              <p class="placeholder-texto">${statusData.mensagem}</p>
+              <p class="placeholder-sub">
+                Cartas: ${r.cartas || 0} | Clãs: ${r.clans || 0} | 
+                Jogadores: ${r.jogadores || 0} | Guerras: ${r.guerras || 0}
+              </p>
+            </div>`;
+          } else {
+            elDadosApi.innerHTML = `<div class="placeholder">
+              <span class="placeholder-icon">❌</span>
+              <p class="placeholder-texto">${statusData.mensagem}</p>
+            </div>`;
+          }
+        }
+      } catch { /* polling silencioso */ }
+    }, 3000);
+  } catch (err) {
+    exibirErro(`Falha ao iniciar seed: ${err.message}`);
+  }
+}
+
+/**
+ * Reseta o banco (TRUNCATE em todas as tabelas).
+ */
+async function resetarBanco() {
+  if (!confirm("🗑️ ATENÇÃO: Isso vai APAGAR TODOS os dados do banco!\n\nDeseja continuar?")) return;
+  if (!confirm("⚠️ Última confirmação: tem certeza que quer LIMPAR o banco?")) return;
+
+  trocarAba("dados");
+  elContentTitulo.textContent = "Limpando banco...";
+
+  try {
+    const res = await fetch(`${API_BASE}/api/admin/reset`, { method: "POST" });
+    const data = await res.json();
+
+    elContentTitulo.textContent = "Banco de dados";
+    elDadosApi.innerHTML = `<div class="placeholder">
+      <span class="placeholder-icon">${data.status === "ok" ? "🗑️" : "❌"}</span>
+      <p class="placeholder-texto">${data.mensagem}</p>
+      ${data.tabelas ? `<p class="placeholder-sub">Tabelas: ${data.tabelas.join(", ")}</p>` : ""}
+    </div>`;
+  } catch (err) {
+    exibirErro(`Falha ao limpar banco: ${err.message}`);
+  }
+}
+
+/**
+ * Baixa o CSV da tabela atualmente selecionada no painel de banco,
+ * ou da análise ativa (ranking → jogadores, cartas → cartas, etc.)
+ */
+async function baixarCSV() {
+  // Determina qual tabela exportar
+  let tabela = null;
+
+  // 1. Se o painel de banco está aberto e tem tabela selecionada
+  const selectTabela = document.getElementById("banco-select-tabela");
+  if (selectTabela && selectTabela.value) {
+    tabela = selectTabela.value;
+  }
+
+  // 2. Se há uma análise ativa, mapeia para tabela
+  if (!tabela && ultimoEndpoint) {
+    const mapa = {
+      "/api/ranking": "jogadores",
+      "/api/cartas": "cartas",
+      "/api/guerras": "guerras",
+      "/api/torneios": "torneios",
+    };
+    tabela = mapa[ultimoEndpoint];
+  }
+
+  if (!tabela) {
+    exibirErro("Selecione uma tabela no painel de banco ou uma análise para exportar.");
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/api/admin/export/${tabela}`);
+    if (!res.ok) {
+      const err = await res.json();
+      exibirErro(err.mensagem || "Erro ao exportar CSV.");
+      return;
+    }
+
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${tabela}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    exibirErro(`Erro ao baixar CSV: ${err.message}`);
+  }
+}
+
+// ============================================================
 // INICIALIZAÇÃO
 // ============================================================
 document.addEventListener("DOMContentLoaded", async () => {
@@ -592,6 +731,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("btn-fechar-banco").addEventListener("click", fecharPainelBanco);
   document.getElementById("btn-testar-conexao").addEventListener("click", testarConexaoBanco);
   document.getElementById("btn-executar-select").addEventListener("click", selecionarTabela);
+
+  // Admin
+  document.getElementById("btn-seed").addEventListener("click", () => { fecharSidebar(); executarSeed(); });
+  document.getElementById("btn-reset").addEventListener("click", () => { fecharSidebar(); resetarBanco(); });
+  document.getElementById("btn-csv").addEventListener("click", () => { fecharSidebar(); baixarCSV(); });
 
   // Sidebar toggle (mobile)
   document.getElementById("sidebar-toggle").addEventListener("click", toggleSidebar);

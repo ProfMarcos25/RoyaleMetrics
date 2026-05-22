@@ -23,7 +23,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.controllers import cartas, db_tools, guerras, ranking, sync, torneios
+from app.controllers import cartas, database_admin, db_tools, guerras, ranking, sync, torneios
 from app.models.services.scheduler import iniciar_scheduler
 
 # ── Logging ──────────────────────────────────────────────────────────────────
@@ -103,6 +103,7 @@ app.include_router(cartas.router)
 app.include_router(guerras.router)
 app.include_router(torneios.router)
 app.include_router(db_tools.router)
+app.include_router(database_admin.router)
 
 
 # ── View: rota raiz devolve o index.html (SPA) ───────────────────────────────
