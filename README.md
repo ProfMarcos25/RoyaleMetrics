@@ -89,10 +89,19 @@ royale-metrics/
 ### 2) Ambiente virtual e dependências
 
 ```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+py -m venv .venv
+
 ```
+```
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+```powershell
+py -m pip install -r requirements.txt
+```
+
+
 
 ### 3) Configurar `.env`
 

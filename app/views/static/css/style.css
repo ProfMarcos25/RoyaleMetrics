@@ -232,6 +232,22 @@ a:hover {
   background-color: rgba(74, 158, 255, 0.1);
 }
 
+.nav-item.nav-admin {
+  font-size: 0.9rem;
+}
+
+.nav-item.nav-admin:hover {
+  color: var(--accent-green);
+  border-left-color: var(--accent-green);
+  background-color: rgba(52, 211, 153, 0.1);
+}
+
+.nav-item.nav-danger:hover {
+  color: var(--accent-red);
+  border-left-color: var(--accent-red);
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
 .nav-icon {
   font-size: 1.2rem;
   width: 24px;
@@ -326,7 +342,7 @@ a:hover {
 /* Coluna principal de dados/gráficos */
 .content-main {
   flex: 1;
-  padding: 24px 32px;
+  padding: 24px 32px 70px;
   min-width: 0; /* evita overflow em flex */
   display: flex;
   flex-direction: column;
@@ -519,27 +535,17 @@ a:hover {
 
 /* Loading e erro fixos na parte inferior */
 .loading-bottom {
-  position: fixed;
-  bottom: 48px;
-  left: var(--sidebar-width);
-  right: 0;
-  z-index: 100;
-  padding: 16px;
-  background: rgba(10, 12, 20, 0.9);
-  border-top: 1px solid var(--border-color);
+  padding: 10px 16px;
+  background: rgba(10, 12, 20, 0.85);
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 4px;
 }
 
 .erro-bottom {
-  position: fixed;
-  bottom: 48px;
-  left: var(--sidebar-width);
-  right: 0;
-  z-index: 100;
-  margin: 0;
-  border-radius: 0;
-  border-left: none;
-  border-right: none;
-  border-bottom: none;
+  padding: 10px 16px;
+  margin: 0 0 4px 0;
+  border-radius: 6px;
+  background: rgba(80, 20, 20, 0.85);
 }
 
 .loading-pontos {
@@ -973,10 +979,14 @@ a:hover {
    FOOTER
    ---------------------------------------------------------- */
 .footer {
-  margin-left: var(--sidebar-width);
+  position: fixed;
+  bottom: 0;
+  left: var(--sidebar-width);
+  right: 0;
+  z-index: 200;
   background-color: var(--bg-footer);
   border-top: 1px solid var(--border-color);
-  padding: 16px 24px;
+  padding: 10px 24px;
   text-align: center;
 }
 
@@ -1027,12 +1037,13 @@ a:hover {
   }
 
   .footer {
-    margin-left: 0;
+    left: 0;
   }
 
   .content-main {
     padding: 16px;
     padding-top: 56px; /* espaço para botão toggle */
+    padding-bottom: 70px;
   }
 
   .tabs-header {
